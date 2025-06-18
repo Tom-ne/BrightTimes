@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -29,19 +28,48 @@ export default function AddActivityPage() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
+  const handleInputChange = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }))
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
 
-    // Simulate saving process
-    setTimeout(() => {
-      setIsLoading(false)
-      router.push("/dashboard")
-    }, 1500)
-  }
+    try {
+      const payload = {
+        title: formData.title,
+        topic: formData.topic,
+        age_group: formData.ageGroup,
+        date: formData.date,
+        time: formData.time,
+        join_link: formData.joinLink,
+        // description is optional on backend; omit or add if you update backend accordingly
+      }
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
+      const response = await fetch("http://localhost:5000/activities", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          // Add your auth token here, e.g. from localStorage
+          "Authorization": `Bearer ${localStorage.getItem("token") ?? ""}`,
+        },
+        body: JSON.stringify(payload),
+        credentials: "include", // if using cookie/session auth; remove if not needed
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        router.push("/dashboard")
+      } else {
+        alert(data.error || "Failed to create activity")
+      }
+    } catch (error) {
+      alert("Error connecting to server")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -123,7 +151,7 @@ export default function AddActivityPage() {
                     <SelectTrigger className="h-12 text-base border-2 border-purple-200 rounded-xl">
                       <SelectValue placeholder="Select a topic" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white shadow-lg rounded-lg">
                       {topics.map((topic) => (
                         <SelectItem key={topic} value={topic}>
                           {topic}
@@ -141,7 +169,7 @@ export default function AddActivityPage() {
                     <SelectTrigger className="h-12 text-base border-2 border-purple-200 rounded-xl">
                       <SelectValue placeholder="Select age group" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white shadow-lg rounded-lg">
                       {ageGroups.map((age) => (
                         <SelectItem key={age} value={age}>
                           {age}

@@ -4,7 +4,7 @@ from db import SessionLocal
 from decorators import token_required
 from datetime import datetime
 
-organizer_routes_blueprint = Blueprint("api", __name__)
+organizer_routes_blueprint = Blueprint("organizers", __name__)
 
 @organizer_routes_blueprint.route("/activities", methods=["POST"])
 @token_required
@@ -61,3 +61,60 @@ def update_activity(activity_id):
     session.commit()
     session.close()
     return jsonify({"message": "Activity updated"})
+
+
+@organizer_routes_blueprint.route("/activities/mine", methods=["GET"])
+@token_required
+def get_my_activities():
+    session = SessionLocal()
+    try:
+        activities = session.query(Activity).filter_by(organizer_id=g.organizer_id).all()
+
+        result = [
+            {
+                "id": a.id,
+                "title": a.title,
+                "topic": a.topic,
+                "ageGroup": a.age_group,
+                "date": a.date.isoformat(),
+                "time": a.time,
+                "joinLink": a.join_link,
+                "organizer": a.organizer.name if hasattr(a.organizer, 'name') else None,
+            }
+            for a in activities
+        ]
+
+        return jsonify(result), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        session.close()
+
+
+@organizer_routes_blueprint.route("/activities/<int:activity_id>", methods=["GET"])
+@token_required
+def get_activity(activity_id):
+    session = SessionLocal()
+    activity = session.query(Activity).filter_by(id=activity_id).first()
+
+    if not activity:
+        session.close()
+        return jsonify({"error": "Activity not found"}), 404
+
+    if activity.organizer_id != g.organizer_id:
+        session.close()
+        return jsonify({"error": "Unauthorized – you don't own this activity"}), 403
+
+    result = {
+        "id": activity.id,
+        "title": activity.title,
+        "description": getattr(activity, "description", ""),
+        "topic": activity.topic,
+        "ageGroup": activity.age_group,
+        "date": activity.date.isoformat(),
+        "time": activity.time,
+        "joinLink": activity.join_link,
+    }
+
+    session.close()
+    return jsonify(result), 200

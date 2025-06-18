@@ -1,63 +1,85 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Calendar, Clock, Users, Edit, Trash2, Plus, LogOut } from "lucide-react"
-import Link from "next/link"
-
-// Mock data for organizer's activities
-const organizerActivities = [
-  {
-    id: 1,
-    title: "Creative Art Workshop",
-    topic: "Arts & Crafts",
-    ageGroup: "5-8 years",
-    date: "2024-01-15",
-    time: "10:00 AM",
-    joinLink: "https://zoom.us/j/123456789",
-    participants: 12,
-  },
-  {
-    id: 2,
-    title: "Science Experiments Fun",
-    topic: "Science",
-    ageGroup: "8-12 years",
-    date: "2024-01-16",
-    time: "2:00 PM",
-    joinLink: "https://zoom.us/j/987654321",
-    participants: 8,
-  },
-  {
-    id: 3,
-    title: "Story Time Adventure",
-    topic: "Reading",
-    ageGroup: "3-6 years",
-    date: "2024-01-17",
-    time: "11:00 AM",
-    joinLink: "https://zoom.us/j/456789123",
-    participants: 15,
-  },
-]
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Calendar,
+  Clock,
+  Users,
+  Edit,
+  Trash2,
+  Plus,
+  LogOut,
+} from "lucide-react";
+import Link from "next/link";
 
 export default function DashboardPage() {
-  const [activities, setActivities] = useState(organizerActivities)
+  const [activities, setActivities] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
+
+  useEffect(() => {
+    const storedUsername = localStorage.getItem("username");
+    setUsername(storedUsername);
+
+    async function fetchActivities() {
+      try {
+        const token = localStorage.getItem("token");
+
+        const res = await fetch("http://localhost:5000/activities/mine", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+          credentials: "include",
+        });
+
+        if (!res.ok) {
+          throw new Error(`Failed to fetch activities: ${res.statusText}`);
+        }
+
+        const data = await res.json();
+        setActivities(data);
+      } catch (err: any) {
+        setError(err.message || "Unknown error");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchActivities();
+  }, []);
 
   const handleDelete = (id: number) => {
     if (confirm("Are you sure you want to delete this activity?")) {
-      setActivities(activities.filter((activity) => activity.id !== id))
+      setActivities(activities.filter((activity) => activity.id !== id));
     }
-  }
+  };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
+    const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
       weekday: "long",
       year: "numeric",
       month: "long",
       day: "numeric",
-    })
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="text-center py-12 text-gray-600">
+        Loading activities...
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div className="text-center py-12 text-red-600">Error: {error}</div>;
   }
 
   return (
@@ -71,12 +93,19 @@ export default function DashboardPage() {
                 <span className="text-white font-bold text-sm">K</span>
               </div>
               <h1 className="text-2xl font-bold text-gray-800">BrightTimes</h1>
-              <Badge className="bg-purple-100 text-purple-700 ml-2">Organizer</Badge>
+              <Badge className="bg-purple-100 text-purple-700 ml-2">
+                Organizer
+              </Badge>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-gray-600">Welcome, Ms. Sarah!</span>
+              <span className="text-gray-600">
+                {username ? `Welcome, ${username}!` : "Welcome!"}
+              </span>
               <Link href="/">
-                <Button variant="outline" className="border-purple-200 text-purple-600 hover:bg-purple-50">
+                <Button
+                  variant="outline"
+                  className="border-purple-200 text-purple-600 hover:bg-purple-50"
+                >
                   <LogOut className="w-4 h-4 mr-2" />
                   Sign Out
                 </Button>
@@ -91,8 +120,12 @@ export default function DashboardPage() {
         {/* Dashboard Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
           <div>
-            <h2 className="text-3xl font-bold text-gray-800 mb-2">Your Activities</h2>
-            <p className="text-gray-600">Manage and organize your online activities for kids</p>
+            <h2 className="text-3xl font-bold text-gray-800 mb-2">
+              Your Activities
+            </h2>
+            <p className="text-gray-600">
+              Manage and organize your online activities for kids
+            </p>
           </div>
           <Link href="/dashboard/add-activity">
             <Button className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-semibold px-6 py-3 rounded-xl text-base mt-4 sm:mt-0">
@@ -108,7 +141,9 @@ export default function DashboardPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-purple-100 text-sm font-medium">Total Activities</p>
+                  <p className="text-purple-100 text-sm font-medium">
+                    Total Activities
+                  </p>
                   <p className="text-3xl font-bold">{activities.length}</p>
                 </div>
                 <Calendar className="w-8 h-8 text-purple-200" />
@@ -119,9 +154,14 @@ export default function DashboardPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-green-100 text-sm font-medium">Total Participants</p>
+                  <p className="text-green-100 text-sm font-medium">
+                    Total Participants
+                  </p>
                   <p className="text-3xl font-bold">
-                    {activities.reduce((sum, activity) => sum + activity.participants, 0)}
+                    {activities.reduce(
+                      (sum, activity) => sum + (activity.participants || 0),
+                      0
+                    )}
                   </p>
                 </div>
                 <Users className="w-8 h-8 text-green-200" />
@@ -132,8 +172,10 @@ export default function DashboardPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-orange-100 text-sm font-medium">This Week</p>
-                  <p className="text-3xl font-bold">3</p>
+                  <p className="text-orange-100 text-sm font-medium">
+                    This Week
+                  </p>
+                  <p className="text-3xl font-bold">{activities.length}</p>
                 </div>
                 <Clock className="w-8 h-8 text-orange-200" />
               </div>
@@ -153,12 +195,17 @@ export default function DashboardPage() {
                   <div className="flex-1">
                     <div className="flex items-start justify-between mb-4">
                       <div>
-                        <h3 className="text-xl font-bold text-gray-800 mb-2">{activity.title}</h3>
+                        <h3 className="text-xl font-bold text-gray-800 mb-2">
+                          {activity.title}
+                        </h3>
                         <div className="flex flex-wrap gap-2 mb-3">
                           <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-full">
                             {activity.topic}
                           </Badge>
-                          <Badge variant="outline" className="border-purple-300 text-purple-700 px-3 py-1 rounded-full">
+                          <Badge
+                            variant="outline"
+                            className="border-purple-300 text-purple-700 px-3 py-1 rounded-full"
+                          >
                             {activity.ageGroup}
                           </Badge>
                         </div>
@@ -175,7 +222,7 @@ export default function DashboardPage() {
                       </div>
                       <div className="flex items-center text-gray-600">
                         <Users className="w-4 h-4 mr-2 text-purple-500" />
-                        <span>{activity.participants} participants</span>
+                        <span>{activity.participants || 0} participants</span>
                       </div>
                     </div>
                   </div>
@@ -207,8 +254,12 @@ export default function DashboardPage() {
         {activities.length === 0 && (
           <div className="text-center py-12">
             <div className="text-6xl mb-4">📅</div>
-            <h3 className="text-2xl font-bold text-gray-600 mb-2">No activities yet</h3>
-            <p className="text-gray-500 mb-6">Create your first activity to get started!</p>
+            <h3 className="text-2xl font-bold text-gray-600 mb-2">
+              No activities yet
+            </h3>
+            <p className="text-gray-500 mb-6">
+              Create your first activity to get started!
+            </p>
             <Link href="/dashboard/add-activity">
               <Button className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-semibold px-6 py-3 rounded-xl">
                 <Plus className="w-5 h-5 mr-2" />
@@ -219,5 +270,5 @@ export default function DashboardPage() {
         )}
       </main>
     </div>
-  )
+  );
 }

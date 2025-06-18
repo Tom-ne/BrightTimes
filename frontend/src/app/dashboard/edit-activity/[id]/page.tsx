@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -16,19 +15,11 @@ import { useRouter, useParams } from "next/navigation"
 const topics = ["Arts & Crafts", "Science", "Reading", "Math", "Music", "Technology", "Sports", "Cooking"]
 const ageGroups = ["3-6 years", "4-8 years", "5-8 years", "6-10 years", "8-12 years", "8-14 years", "10+ years"]
 
-// Mock data for existing activity
-const existingActivity = {
-  id: 1,
-  title: "Creative Art Workshop",
-  description: "A fun and engaging art workshop where kids will learn to create beautiful paintings using watercolors.",
-  topic: "Arts & Crafts",
-  ageGroup: "5-8 years",
-  date: "2024-01-15",
-  time: "10:00",
-  joinLink: "https://zoom.us/j/123456789",
-}
-
 export default function EditActivityPage() {
+  const router = useRouter()
+  const params = useParams() // Assuming URL like /activities/[id]/edit
+  const activityId = params.id
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -39,40 +30,78 @@ export default function EditActivityPage() {
     joinLink: "",
   })
   const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
-  const params = useParams()
+  const [error, setError] = useState<string | null>(null)
 
+  // Fetch activity details on mount
   useEffect(() => {
-    // In a real app, you'd fetch the activity data based on the ID
-    setFormData({
-      title: existingActivity.title,
-      description: existingActivity.description,
-      topic: existingActivity.topic,
-      ageGroup: existingActivity.ageGroup,
-      date: existingActivity.date,
-      time: existingActivity.time,
-      joinLink: existingActivity.joinLink,
-    })
-  }, [])
+    if (!activityId) return
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+    async function fetchActivity() {
+      try {
+        const res = await fetch(`http://localhost:5000/activities/${activityId}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        })
+        if (!res.ok) throw new Error("Failed to fetch activity")
+        const data = await res.json()
 
-    // Simulate saving process
-    setTimeout(() => {
-      setIsLoading(false)
-      router.push("/dashboard")
-    }, 1500)
-  }
+        setFormData({
+          title: data.title || "",
+          description: data.description || "",
+          topic: data.topic || "",
+          ageGroup: data.ageGroup || data.age_group || "",
+          date: data.date || "",
+          time: data.time || "",
+          joinLink: data.joinLink || data.join_link || "",
+        })
+      } catch (err: any) {
+        setError(err.message)
+      }
+    }
+    fetchActivity()
+  }, [activityId])
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const res = await fetch(`http://localhost:5000/activities/${activityId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          title: formData.title,
+          description: formData.description,
+          topic: formData.topic,
+          age_group: formData.ageGroup,
+          date: formData.date,
+          time: formData.time,
+          join_link: formData.joinLink,
+        }),
+      })
+
+      if (!res.ok) {
+        const errData = await res.json()
+        throw new Error(errData.error || "Failed to update activity")
+      }
+
+      router.push("/dashboard")
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
-      {/* Header */}
       <header className="bg-white shadow-sm border-b-4 border-purple-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -92,11 +121,11 @@ export default function EditActivityPage() {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-gray-800 mb-2">Edit Activity</h2>
           <p className="text-gray-600">Update your activity details</p>
+          {error && <p className="text-red-600 mt-2">{error}</p>}
         </div>
 
         <Card className="bg-white shadow-xl border-2 border-purple-100 rounded-2xl">
@@ -227,7 +256,6 @@ export default function EditActivityPage() {
                 />
               </div>
 
-              {/* Submit Button */}
               <div className="flex justify-end pt-6">
                 <Button
                   type="submit"

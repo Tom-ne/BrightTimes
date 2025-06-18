@@ -55,7 +55,9 @@ def get_activities():
             "date": a.date.isoformat(),
             "time": a.time,
             "joinLink": a.join_link,
-            "organizer": a.organizer,
+            "organizer": {
+                "username": a.organizer.username,
+            }
         }
         for a in activities
     ]

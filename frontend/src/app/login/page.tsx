@@ -1,38 +1,50 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
+import React, { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ArrowLeft, Lock, Mail } from "lucide-react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("")
+  const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setError("")
 
-    // Simulate login process
-    setTimeout(() => {
-      setIsLoading(false)
-      // In a real app, you'd validate credentials here
+    try {
+      const res = await fetch("http://localhost:5000/auth/login?username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password))
+
+      if (!res.ok) {
+        const data = await res.json()
+        setError(data.error || "Login failed")
+        setIsLoading(false)
+        return
+      }
+
+      const data = await res.json()
+      localStorage.setItem("token", data.token)
+      localStorage.setItem("username", data.username)
       router.push("/dashboard")
-    }, 1500)
+    } catch (err) {
+      console.error(err)
+      setError("Could not connect to server")
+      setIsLoading(false)
+    }
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Back to Home */}
         <Link href="/" className="inline-flex items-center text-purple-600 hover:text-purple-700 mb-6 font-medium">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Activities
@@ -51,17 +63,17 @@ export default function LoginPage() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-                  Email Address
+                <Label htmlFor="username" className="text-sm font-medium text-gray-700">
+                  Username
                 </Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <Input
-                    id="email"
-                    type="email"
-                    placeholder="your@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    id="username"
+                    type="text"
+                    placeholder="Your username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                     className="pl-10 h-12 text-base border-2 border-purple-200 rounded-xl focus:border-purple-400"
                     required
                   />
@@ -84,6 +96,9 @@ export default function LoginPage() {
                   />
                 </div>
               </div>
+
+              {error && <p className="text-red-500 text-sm">{error}</p>}
+
               <Button
                 type="submit"
                 disabled={isLoading}

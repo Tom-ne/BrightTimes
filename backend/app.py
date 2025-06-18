@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 from db import engine, Base
 from routes.activity_routes import activity_routes_blueprint
 from routes.auth_routes import auth_routes_blueprint
@@ -9,6 +10,7 @@ import os
 load_dotenv()
 
 app = Flask(__name__)
+CORS(app, supports_credentials=True, origins=["http://localhost:3000"])
 
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 app.config["ALGORITHM"] = os.getenv("ALGORITHM")
