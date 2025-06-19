@@ -90,7 +90,7 @@ export default function DashboardPage() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-sm">K</span>
+                <span className="text-white font-bold text-sm">BT</span>
               </div>
               <h1 className="text-2xl font-bold text-gray-800">BrightTimes</h1>
               <Badge className="bg-purple-100 text-purple-700 ml-2">
@@ -155,7 +155,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-green-100 text-sm font-medium">
-                    Total Participants
+                    Join button clicked
                   </p>
                   <p className="text-3xl font-bold">
                     {activities.reduce(

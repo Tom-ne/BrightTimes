@@ -2,7 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -11,7 +16,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Users, ExternalLink, Filter, Clock } from "lucide-react";
+import {
+  Calendar,
+  Users,
+  ExternalLink,
+  Filter,
+  Clock,
+  Info,
+  Rocket,
+} from "lucide-react";
 import Link from "next/link";
 
 const topics = [
@@ -23,6 +36,7 @@ const topics = [
   "Music",
   "Technology",
 ];
+
 const ageGroups = [
   "All Ages",
   "3-6 years",
@@ -43,7 +57,6 @@ export default function HomePage() {
     const fetchActivities = async () => {
       try {
         const params = new URLSearchParams();
-
         if (selectedTopic !== "All Topics") params.append("topic", selectedTopic);
         if (selectedAgeGroup !== "All Ages") params.append("age_group", selectedAgeGroup);
 
@@ -51,8 +64,6 @@ export default function HomePage() {
         if (!res.ok) throw new Error("Failed to fetch activities");
 
         const data = await res.json();
-        console.log(data);
-
         setActivities(data);
       } catch (error) {
         console.error(error);
@@ -63,14 +74,10 @@ export default function HomePage() {
     fetchActivities();
   }, [selectedTopic, selectedAgeGroup]);
 
-  // Combine backend date and time into a Date object in Israel time
   const parseIsraelDateTime = (dateStr: string, timeStr: string) => {
-    // e.g. "2025-06-19" and "18:51" => "2025-06-19T18:51:00"
-    // This will be interpreted as local time by JS Date constructor
     return new Date(`${dateStr}T${timeStr}:00`);
   };
 
-  // Format date with Israel timezone (Asia/Jerusalem)
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
@@ -82,7 +89,6 @@ export default function HomePage() {
     });
   };
 
-  // Format time with Israel timezone, 24h format
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString("en-US", {
       hour: "2-digit",
@@ -100,7 +106,7 @@ export default function HomePage() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-sm">K</span>
+                <span className="text-white font-bold text-sm">BT</span>
               </div>
               <h1 className="text-2xl font-bold text-gray-800">BrightTimes</h1>
             </div>
@@ -186,66 +192,82 @@ export default function HomePage() {
         {/* Activities Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {activities.length > 0 ? (
-            activities.map((activity) => (
-              <Card
-                key={activity.id}
-                className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-purple-100 hover:border-purple-300 overflow-hidden p-0"
-              >
-                <CardHeader className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-t-2xl pb-4 px-6 pt-4 m-0">
-                  <div className="flex justify-between items-start mb-2">
-                    <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                      {activity.topic}
-                    </Badge>
-                    <Badge
-                      variant="outline"
-                      className="border-purple-300 text-purple-700 px-3 py-1 rounded-full text-sm"
-                    >
-                      {activity.ageGroup}
-                    </Badge>
-                  </div>
-                  <CardTitle className="text-xl font-bold text-gray-800 leading-tight">
-                    {activity.title}
-                  </CardTitle>
-                </CardHeader>
+            activities.map((activity) => {
+              const fullDate = parseIsraelDateTime(activity.date, activity.time);
+              return (
+                <Card
+                  key={activity.id}
+                  className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-purple-100 hover:border-purple-300 overflow-hidden p-0"
+                >
+                  <CardHeader className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-t-2xl pb-4 px-6 pt-4 m-0">
+                    <div className="flex justify-between items-start mb-2">
+                      <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                        {activity.topic}
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className="border-purple-300 text-purple-700 px-3 py-1 rounded-full text-sm"
+                      >
+                        {activity.ageGroup}
+                      </Badge>
+                    </div>
+                    <CardTitle className="text-xl font-bold text-gray-800 leading-tight">
+                      {activity.title}
+                    </CardTitle>
+                  </CardHeader>
 
-                <CardContent className="p-6">
-                  <div className="flex items-center text-gray-600 space-x-4 mb-6">
-                    <div className="flex items-center">
-                      <Calendar className="w-5 h-5 mr-2 text-purple-500" />
+                  <CardContent className="p-6">
+                    <div className="flex items-center text-gray-600 space-x-4 mb-4">
+                      <div className="flex items-center">
+                        <Calendar className="w-5 h-5 mr-2 text-purple-500" />
+                        <span className="text-sm font-medium">
+                          {formatDate(activity.date)}
+                        </span>
+                      </div>
+                      <div className="flex items-center">
+                        <Clock className="w-5 h-5 mr-2 text-purple-500" />
+                        <span className="text-sm font-medium">
+                          {formatTime(fullDate)}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center text-gray-600 mb-6">
+                      <Users className="w-5 h-5 mr-3 text-purple-500" />
                       <span className="text-sm font-medium">
-                        {formatDate(activity.date)}
+                        Led by <b>{activity.organizer?.username || "Unknown"}</b>
                       </span>
                     </div>
-                    <div className="flex items-center">
-                      <Clock className="w-5 h-5 mr-2 text-purple-500" />
-                      <span className="text-sm font-medium">
-                        {formatTime(parseIsraelDateTime(activity.date, activity.time))}
-                      </span>
+
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <Button
+                        asChild
+                        className="flex-1 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-semibold py-3 rounded-xl text-base h-12"
+                      >
+                        <a
+                          href={activity.joinLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center"
+                        >
+                          <Rocket className="w-5 h-5 mr-2" />
+                          Quick Join
+                        </a>
+                      </Button>
+                      <Link href={`/activity/${activity.id}`}>
+                        <Button
+                          variant="outline"
+                          className="flex-1 border-purple-200 text-purple-700 hover:bg-purple-50 font-semibold py-3 rounded-xl text-base h-12"
+                        >
+                          <Info className="w-5 h-5 mr-2" />
+                          Show More Details
+                        </Button>
+                      </Link>
                     </div>
-                  </div>
-                  <div className="flex items-center text-gray-600 mb-6">
-                    <Users className="w-5 h-5 mr-3 text-purple-500" />
-                    <span className="text-sm font-medium">
-                      Led by <b>{activity.organizer?.username || "Unknown"}</b>
-                    </span>
-                  </div>
-                  <Button
-                    asChild
-                    className="w-full bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-semibold py-3 rounded-xl text-base h-12"
-                  >
-                    <a
-                      href={activity.joinLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-center"
-                    >
-                      <ExternalLink className="w-5 h-5 mr-2" />
-                      Join Activity
-                    </a>
-                  </Button>
-                </CardContent>
-              </Card>
-            ))
+                  </CardContent>
+                </Card>
+              );
+            })
           ) : (
             <div className="text-center py-12 col-span-full">
               <div className="text-6xl mb-4">🔍</div>
