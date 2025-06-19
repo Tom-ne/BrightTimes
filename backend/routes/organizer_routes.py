@@ -3,6 +3,7 @@ from models import Activity
 from db import SessionLocal
 from decorators import token_required
 from datetime import datetime
+from utils.link_validation import is_valid_link
 
 organizer_routes_blueprint = Blueprint("organizers", __name__)
 
@@ -13,6 +14,9 @@ def add_activity():
     required_fields = ["title", "topic", "age_group", "date", "time", "join_link"]
     if not all(field in data for field in required_fields):
         return jsonify({"error": "Missing required fields"}), 400
+    
+    if not is_valid_link(data["join_link"]):
+        return jsonify({"error": "Invalid join link. Only Google Meet and Zoom allowed!"}), 400
 
     session = SessionLocal()
     try:
