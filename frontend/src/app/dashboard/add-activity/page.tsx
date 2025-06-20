@@ -44,7 +44,7 @@ export default function AddActivityPage() {
         date: formData.date,
         time: formData.time,
         join_link: formData.joinLink,
-        // description is optional on backend; omit or add if you update backend accordingly
+        description: formData.description
       }
 
       const response = await fetch("http://localhost:5000/activities", {
