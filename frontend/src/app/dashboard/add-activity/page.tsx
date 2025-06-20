@@ -129,7 +129,7 @@ export default function AddActivityPage() {
               {/* Description */}
               <div className="space-y-2">
                 <Label htmlFor="description" className="text-base font-semibold text-gray-700">
-                  Description (Optional)
+                  Description
                 </Label>
                 <Textarea
                   id="description"
@@ -137,6 +137,7 @@ export default function AddActivityPage() {
                   value={formData.description}
                   onChange={(e) => handleInputChange("description", e.target.value)}
                   className="min-h-[100px] text-base border-2 border-purple-200 rounded-xl focus:border-purple-400"
+                  required
                 />
               </div>
 

@@ -11,7 +11,7 @@ organizer_routes_blueprint = Blueprint("organizers", __name__)
 @token_required
 def add_activity():
     data = request.json
-    required_fields = ["title", "topic", "age_group", "date", "time", "join_link"]
+    required_fields = ["title", "description", "topic", "age_group", "date", "time", "join_link"]
     if not all(field in data for field in required_fields):
         return jsonify({"error": "Missing required fields"}), 400
     
@@ -23,6 +23,7 @@ def add_activity():
         activity = Activity(
             title=data["title"],
             topic=data["topic"],
+            description=data["description"],
             age_group=data["age_group"],
             date=datetime.fromisoformat(data["date"]).date(),
             time=data["time"],
@@ -55,7 +56,7 @@ def update_activity(activity_id):
         return jsonify({"error": "Unauthorized – you don't own this activity"}), 403
 
     # Update allowed fields
-    for field in ["title", "topic", "age_group", "date", "time", "join_link"]:
+    for field in ["title", "description", "topic", "age_group", "date", "time", "join_link"]:
         if field in data:
             if field == "date":
                 setattr(activity, field, datetime.fromisoformat(data[field]).date())
@@ -78,6 +79,7 @@ def get_my_activities():
             {
                 "id": a.id,
                 "title": a.title,
+                "description": a.description,
                 "topic": a.topic,
                 "ageGroup": a.age_group,
                 "date": a.date.isoformat(),
@@ -90,6 +92,7 @@ def get_my_activities():
 
         return jsonify(result), 200
     except Exception as e:
+        print(f"Error fetching activities: {e}")
         return jsonify({"error": str(e)}), 500
     finally:
         session.close()
@@ -112,6 +115,7 @@ def get_activity(activity_id):
     result = {
         "id": activity.id,
         "title": activity.title,
+        "description": activity.description,
         "description": getattr(activity, "description", ""),
         "topic": activity.topic,
         "ageGroup": activity.age_group,

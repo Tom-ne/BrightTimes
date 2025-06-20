@@ -50,6 +50,7 @@ def get_activities():
         {
             "id": a.id,
             "title": a.title,
+            "description": a.description,
             "topic": a.topic,
             "ageGroup": a.age_group,
             "date": a.date.isoformat(),

@@ -7,6 +7,7 @@ class Activity(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, nullable=False)
+    description = Column(String, nullable=False)
     topic = Column(String, nullable=False)
     age_group = Column(String, nullable=False)
     date = Column(Date, nullable=False)
