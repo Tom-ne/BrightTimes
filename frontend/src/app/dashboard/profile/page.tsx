@@ -14,24 +14,17 @@ import { useRouter } from "next/navigation"
 const organizerData = {
   id: 1,
   name: "Ms. Sarah",
-  email: "sarah@example.com",
-  phone: "+1 (555) 123-4567",
-  location: "New York, NY",
   bio: "Professional art teacher with 10+ years of experience working with children. I'm passionate about helping kids discover their creativity through fun, engaging activities.",
   avatar: "/placeholder.svg?height=120&width=120",
-  rating: 4.9,
   totalActivities: 45,
   totalParticipants: 1250,
   joinedDate: "2022-03-15",
-  specialties: ["Arts & Crafts", "Creative Writing", "Music"],
+  specialties: ["Arts & Crafts", "Creative Writing", "Music"], // the 5 most common topics
 }
 
 export default function ProfilePage() {
   const [formData, setFormData] = useState({
     name: organizerData.name,
-    email: organizerData.email,
-    phone: organizerData.phone,
-    location: organizerData.location,
     bio: organizerData.bio,
     avatar: organizerData.avatar,
   })
@@ -162,32 +155,6 @@ export default function ProfilePage() {
                         required
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={(e) => handleInputChange("email", e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Phone</Label>
-                      <Input
-                        id="phone"
-                        value={formData.phone}
-                        onChange={(e) => handleInputChange("phone", e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="location">Location</Label>
-                      <Input
-                        id="location"
-                        value={formData.location}
-                        onChange={(e) => handleInputChange("location", e.target.value)}
-                      />
-                    </div>
                   </div>
 
                   {/* Bio */}
@@ -229,12 +196,8 @@ export default function ProfilePage() {
                     <span className="font-bold">{organizerData.totalActivities}</span>
                   </div>
                   <div className="flex justify-between">
-                    <div className="flex items-center"><Users className="w-5 h-5 mr-2" /> Kids Reached</div>
+                    <div className="flex items-center"><Users className="w-5 h-5 mr-2" />Join button pressed</div>
                     <span className="font-bold">{organizerData.totalParticipants}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <div className="flex items-center"><Star className="w-5 h-5 mr-2" /> Avg. Rating</div>
-                    <span className="font-bold">{organizerData.rating}</span>
                   </div>
                   <div className="border-t border-pink-300 pt-2 text-sm text-purple-100">
                     Member since {formatDate(organizerData.joinedDate)}
@@ -279,12 +242,7 @@ export default function ProfilePage() {
                   />
                   <h3 className="font-bold text-gray-800 text-lg">{formData.name}</h3>
                   <div className="flex items-center justify-center text-sm text-gray-600 mb-2">
-                    <Star className="w-4 h-4 text-yellow-500 mr-1" />
-                    {organizerData.rating} ({organizerData.totalActivities} activities)
-                  </div>
-                  <div className="flex items-center justify-center text-sm text-gray-600">
-                    <MapPin className="w-4 h-4 mr-1" />
-                    {formData.location}
+                    {organizerData.totalActivities} activities
                   </div>
                 </div>
                 <p className="text-sm text-gray-600 text-center leading-relaxed">
