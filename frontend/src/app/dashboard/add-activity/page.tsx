@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -23,55 +23,73 @@ export default function AddActivityPage() {
     time: "",
     joinLink: "",
   })
-  const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
 
-  const [topics, setTopics] = useState([
-    "Arts & Crafts",
-    "Science",
-    "Reading",
-    "Math",
-    "Music",
-    "Technology",
-    "Sports",
-    "Cooking",
-  ])
-  const [ageGroups, setAgeGroups] = useState([
-    "3-6 years",
-    "4-8 years",
-    "5-8 years",
-    "6-10 years",
-    "8-12 years",
-    "8-14 years",
-    "10+ years",
-  ])
+  const [isLoading, setIsLoading] = useState(false)
+  const [topics, setTopics] = useState<string[]>([])
+  const [ageGroups, setAgeGroups] = useState<string[]>([])
   const [newTopic, setNewTopic] = useState("")
   const [newAgeGroup, setNewAgeGroup] = useState("")
   const [showNewTopicInput, setShowNewTopicInput] = useState(false)
   const [showNewAgeGroupInput, setShowNewAgeGroupInput] = useState(false)
+  const router = useRouter()
+
+  useEffect(() => {
+    const fetchOptions = async () => {
+      try {
+        const [topicsRes, ageGroupsRes] = await Promise.all([
+          fetch("http://localhost:5000/activities/topics"),
+          fetch("http://localhost:5000/activities/age_groups"),
+        ])
+
+        if (!topicsRes.ok || !ageGroupsRes.ok) throw new Error("Failed to fetch options")
+
+        const topicsData = await topicsRes.json()
+        const ageGroupsData = await ageGroupsRes.json()
+
+        setTopics(topicsData)
+        setAgeGroups(ageGroupsData)
+      } catch (error) {
+        console.error("Error fetching topic/age group options:", error)
+      }
+    }
+
+    fetchOptions()
+  }, [])
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
   const addNewTopic = () => {
-    if (newTopic.trim() && !topics.includes(newTopic.trim())) {
-      const updatedTopics = [...topics, newTopic.trim()]
+    const trimmed = newTopic.trim()
+    if (trimmed && !topics.includes(trimmed)) {
+      const updatedTopics = [...topics, trimmed]
       setTopics(updatedTopics)
-      setFormData((prev) => ({ ...prev, topic: newTopic.trim() }))
+      setFormData((prev) => ({ ...prev, topic: trimmed }))
       setNewTopic("")
       setShowNewTopicInput(false)
     }
   }
 
   const addNewAgeGroup = () => {
-    if (newAgeGroup.trim() && !ageGroups.includes(newAgeGroup.trim())) {
-      const updatedAgeGroups = [...ageGroups, newAgeGroup.trim()]
-      setAgeGroups(updatedAgeGroups)
-      setFormData((prev) => ({ ...prev, ageGroup: newAgeGroup.trim() }))
-      setNewAgeGroup("")
-      setShowNewAgeGroupInput(false)
+    const trimmed = newAgeGroup.trim()
+    const validFormat = /^(\d{1,2}-\d{1,2}|\d{1,2}\+)$/.test(trimmed)
+    if (!validFormat) {
+      alert("Please enter a valid format like '5-8' or '10+'")
+      return
     }
+
+    const formatted = `${trimmed} years`
+    if (ageGroups.some((ag) => ag.toLowerCase() === formatted.toLowerCase())) {
+      alert("This age group already exists.")
+      return
+    }
+
+    const updatedAgeGroups = [...ageGroups, formatted]
+    setAgeGroups(updatedAgeGroups)
+    setFormData((prev) => ({ ...prev, ageGroup: formatted }))
+    setNewAgeGroup("")
+    setShowNewAgeGroupInput(false)
   }
 
   const removeTopic = (topicToRemove: string) => {
@@ -109,7 +127,7 @@ export default function AddActivityPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("token") ?? ""}`,
+          Authorization: `Bearer ${localStorage.getItem("token") ?? ""}`,
         },
         body: JSON.stringify(payload),
         credentials: "include",
@@ -128,6 +146,7 @@ export default function AddActivityPage() {
       setIsLoading(false)
     }
   }
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
