@@ -26,7 +26,9 @@ export default function AddActivityPage() {
 
   const [isLoading, setIsLoading] = useState(false)
   const [topics, setTopics] = useState<string[]>([])
+  const [lastCustomTopic, setLastCustomTopic] = useState<string | null>(null)
   const [ageGroups, setAgeGroups] = useState<string[]>([])
+  const [lastCustomAgeGroup, setLastCustomAgeGroup] = useState<string | null>(null)
   const [newTopic, setNewTopic] = useState("")
   const [newAgeGroup, setNewAgeGroup] = useState("")
   const [showNewTopicInput, setShowNewTopicInput] = useState(false)
@@ -62,13 +64,40 @@ export default function AddActivityPage() {
 
   const addNewTopic = () => {
     const trimmed = newTopic.trim()
-    if (trimmed && !topics.includes(trimmed)) {
-      const updatedTopics = [...topics, trimmed]
-      setTopics(updatedTopics)
+    if (!trimmed) return
+
+    const lowerTrimmed = trimmed.toLowerCase()
+
+    // Check for duplicates case-insensitively
+    const existing = topics.some((topic) => topic.toLowerCase() === lowerTrimmed)
+    if (existing) {
+      // select the existing topic
       setFormData((prev) => ({ ...prev, topic: trimmed }))
       setNewTopic("")
       setShowNewTopicInput(false)
+      return
     }
+
+    let updatedTopics = [...topics]
+
+    // Remove the last custom topic if it exists
+    if (lastCustomTopic) {
+      updatedTopics = updatedTopics.filter((t) => t !== lastCustomTopic)
+    }
+
+    // Add the new custom topic
+    updatedTopics.push(trimmed)
+
+    // Update state *after* the list includes the new item
+    setTopics(updatedTopics)
+    setLastCustomTopic(trimmed)
+    setNewTopic("")
+    setShowNewTopicInput(false)
+
+    // Delay setting the form value until after topics update is reflected
+    setTimeout(() => {
+      setFormData((prev) => ({ ...prev, topic: trimmed }))
+    }, 0)
   }
 
   const addNewAgeGroup = () => {
@@ -80,16 +109,36 @@ export default function AddActivityPage() {
     }
 
     const formatted = `${trimmed} years`
-    if (ageGroups.some((ag) => ag.toLowerCase() === formatted.toLowerCase())) {
-      alert("This age group already exists.")
+
+    const existing = ageGroups.find(
+      (ag) => ag.toLowerCase() === formatted.toLowerCase()
+    )
+    if (existing) {
+      // Just select it if it already exists
+      setFormData((prev) => ({ ...prev, ageGroup: existing }))
+      setNewAgeGroup("")
+      setShowNewAgeGroupInput(false)
       return
     }
 
-    const updatedAgeGroups = [...ageGroups, formatted]
+    let updatedAgeGroups = [...ageGroups]
+
+    // Remove the last custom one, if exists
+    if (lastCustomAgeGroup) {
+      updatedAgeGroups = updatedAgeGroups.filter((ag) => ag !== lastCustomAgeGroup)
+    }
+
+    // Add the new custom one
+    updatedAgeGroups.push(formatted)
+
     setAgeGroups(updatedAgeGroups)
-    setFormData((prev) => ({ ...prev, ageGroup: formatted }))
+    setLastCustomAgeGroup(formatted)
     setNewAgeGroup("")
     setShowNewAgeGroupInput(false)
+
+    setTimeout(() => {
+      setFormData((prev) => ({ ...prev, ageGroup: formatted }))
+    }, 0)
   }
 
   const removeTopic = (topicToRemove: string) => {
