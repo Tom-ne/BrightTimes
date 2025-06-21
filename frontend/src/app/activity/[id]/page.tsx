@@ -53,8 +53,6 @@ const activitiesData = {
       "Water containers",
       "Paper towels or cloth",
     ],
-    maxParticipants: 15,
-    currentParticipants: 12,
     difficulty: "Beginner",
     tags: ["Creative", "Painting", "Art", "Interactive"],
     images: [
@@ -95,8 +93,6 @@ const activitiesData = {
       "Measuring spoons",
       "Safety goggles (recommended)",
     ],
-    maxParticipants: 20,
-    currentParticipants: 8,
     difficulty: "Intermediate",
     tags: ["STEM", "Experiments", "Chemistry", "Educational"],
     images: ["/placeholder.svg?height=300&width=400", "/placeholder.svg?height=300&width=400"],
