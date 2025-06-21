@@ -8,12 +8,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, Save, Calendar, Clock, Users, LinkIcon, Tag, FileText } from "lucide-react"
+import { ArrowLeft, Save, Calendar, Clock, Users, LinkIcon, Tag, FileText, X, Plus } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-
-const topics = ["Arts & Crafts", "Science", "Reading", "Math", "Music", "Technology", "Sports", "Cooking"]
-const ageGroups = ["3-6 years", "4-8 years", "5-8 years", "6-10 years", "8-12 years", "8-14 years", "10+ years"]
+import { Badge } from "@/components/ui/badge"
 
 export default function AddActivityPage() {
   const [formData, setFormData] = useState({
@@ -28,8 +26,68 @@ export default function AddActivityPage() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
+  const [topics, setTopics] = useState([
+    "Arts & Crafts",
+    "Science",
+    "Reading",
+    "Math",
+    "Music",
+    "Technology",
+    "Sports",
+    "Cooking",
+  ])
+  const [ageGroups, setAgeGroups] = useState([
+    "3-6 years",
+    "4-8 years",
+    "5-8 years",
+    "6-10 years",
+    "8-12 years",
+    "8-14 years",
+    "10+ years",
+  ])
+  const [newTopic, setNewTopic] = useState("")
+  const [newAgeGroup, setNewAgeGroup] = useState("")
+  const [showNewTopicInput, setShowNewTopicInput] = useState(false)
+  const [showNewAgeGroupInput, setShowNewAgeGroupInput] = useState(false)
+
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const addNewTopic = () => {
+    if (newTopic.trim() && !topics.includes(newTopic.trim())) {
+      const updatedTopics = [...topics, newTopic.trim()]
+      setTopics(updatedTopics)
+      setFormData((prev) => ({ ...prev, topic: newTopic.trim() }))
+      setNewTopic("")
+      setShowNewTopicInput(false)
+    }
+  }
+
+  const addNewAgeGroup = () => {
+    if (newAgeGroup.trim() && !ageGroups.includes(newAgeGroup.trim())) {
+      const updatedAgeGroups = [...ageGroups, newAgeGroup.trim()]
+      setAgeGroups(updatedAgeGroups)
+      setFormData((prev) => ({ ...prev, ageGroup: newAgeGroup.trim() }))
+      setNewAgeGroup("")
+      setShowNewAgeGroupInput(false)
+    }
+  }
+
+  const removeTopic = (topicToRemove: string) => {
+    const updatedTopics = topics.filter((topic) => topic !== topicToRemove)
+    setTopics(updatedTopics)
+    if (formData.topic === topicToRemove) {
+      setFormData((prev) => ({ ...prev, topic: "" }))
+    }
+  }
+
+  const removeAgeGroup = (ageGroupToRemove: string) => {
+    const updatedAgeGroups = ageGroups.filter((age) => age !== ageGroupToRemove)
+    setAgeGroups(updatedAgeGroups)
+    if (formData.ageGroup === ageGroupToRemove) {
+      setFormData((prev) => ({ ...prev, ageGroup: "" }))
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -44,18 +102,17 @@ export default function AddActivityPage() {
         date: formData.date,
         time: formData.time,
         join_link: formData.joinLink,
-        description: formData.description
+        description: formData.description,
       }
 
       const response = await fetch("http://localhost:5000/activities", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          // Add your auth token here, e.g. from localStorage
           "Authorization": `Bearer ${localStorage.getItem("token") ?? ""}`,
         },
         body: JSON.stringify(payload),
-        credentials: "include", // if using cookie/session auth; remove if not needed
+        credentials: "include",
       })
 
       const data = await response.json()
@@ -148,36 +205,171 @@ export default function AddActivityPage() {
                     <Tag className="w-4 h-4 mr-2 text-purple-500" />
                     Topic
                   </Label>
-                  <Select value={formData.topic} onValueChange={(value) => handleInputChange("topic", value)}>
-                    <SelectTrigger className="h-12 text-base border-2 border-purple-200 rounded-xl">
-                      <SelectValue placeholder="Select a topic" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white shadow-lg rounded-lg">
-                      {topics.map((topic) => (
-                        <SelectItem key={topic} value={topic}>
-                          {topic}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="space-y-3">
+                    <Select
+                      value={formData.topic}
+                      onValueChange={(value) => handleInputChange("topic", value)}
+                    >
+                      <SelectTrigger className="h-12 text-base border-2 border-purple-200 rounded-xl">
+                        <SelectValue placeholder="Select a topic" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white shadow-lg border border-gray-200 rounded-md">
+                        {topics.map((topic) => (
+                          <SelectItem key={topic} value={topic}>
+                            {topic}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    {!showNewTopicInput ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setShowNewTopicInput(true)}
+                        className="w-full border-2 border-dashed border-purple-300 text-purple-600 hover:bg-purple-50 h-10"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add New Topic
+                      </Button>
+                    ) : (
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Enter new topic"
+                          value={newTopic}
+                          onChange={(e) => setNewTopic(e.target.value)}
+                          className="flex-1 h-10 border-2 border-purple-200 rounded-xl focus:border-purple-400"
+                          onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addNewTopic())}
+                        />
+                        <Button
+                          type="button"
+                          onClick={addNewTopic}
+                          className="bg-green-500 hover:bg-green-600 text-white px-4 h-10 rounded-xl"
+                        >
+                          Add
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            setShowNewTopicInput(false)
+                            setNewTopic("")
+                          }}
+                          className="border-gray-300 text-gray-600 hover:bg-gray-50 px-4 h-10 rounded-xl"
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    )}
+
+                    {topics.length > 8 && (
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        <span className="text-sm text-gray-600 w-full mb-1">Custom topics:</span>
+                        {topics.slice(8).map((topic) => (
+                          <Badge
+                            key={topic}
+                            variant="outline"
+                            className="border-purple-300 text-purple-700 px-3 py-1 rounded-full flex items-center gap-1"
+                          >
+                            {topic}
+                            <button
+                              type="button"
+                              onClick={() => removeTopic(topic)}
+                              className="ml-1 hover:bg-purple-100 rounded-full p-0.5"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
+
                 <div className="space-y-2">
                   <Label className="text-base font-semibold text-gray-700 flex items-center">
                     <Users className="w-4 h-4 mr-2 text-purple-500" />
                     Age Group
                   </Label>
-                  <Select value={formData.ageGroup} onValueChange={(value) => handleInputChange("ageGroup", value)}>
-                    <SelectTrigger className="h-12 text-base border-2 border-purple-200 rounded-xl">
-                      <SelectValue placeholder="Select age group" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white shadow-lg rounded-lg">
-                      {ageGroups.map((age) => (
-                        <SelectItem key={age} value={age}>
-                          {age}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="space-y-3">
+                    <Select
+                      value={formData.ageGroup}
+                      onValueChange={(value) => handleInputChange("ageGroup", value)}
+                    >
+                      <SelectTrigger className="h-12 text-base border-2 border-purple-200 rounded-xl">
+                        <SelectValue placeholder="Select age group" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white shadow-lg border border-gray-200 rounded-md">
+                        {ageGroups.map((age) => (
+                          <SelectItem key={age} value={age}>
+                            {age}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    {!showNewAgeGroupInput ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setShowNewAgeGroupInput(true)}
+                        className="w-full border-2 border-dashed border-purple-300 text-purple-600 hover:bg-purple-50 h-10"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add New Age Group
+                      </Button>
+                    ) : (
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="e.g., 12-16 years"
+                          value={newAgeGroup}
+                          onChange={(e) => setNewAgeGroup(e.target.value)}
+                          className="flex-1 h-10 border-2 border-purple-200 rounded-xl focus:border-purple-400"
+                          onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addNewAgeGroup())}
+                        />
+                        <Button
+                          type="button"
+                          onClick={addNewAgeGroup}
+                          className="bg-green-500 hover:bg-green-600 text-white px-4 h-10 rounded-xl"
+                        >
+                          Add
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            setShowNewAgeGroupInput(false)
+                            setNewAgeGroup("")
+                          }}
+                          className="border-gray-300 text-gray-600 hover:bg-gray-50 px-4 h-10 rounded-xl"
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    )}
+
+                    {ageGroups.length > 7 && (
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        <span className="text-sm text-gray-600 w-full mb-1">Custom age groups:</span>
+                        {ageGroups.slice(7).map((ageGroup) => (
+                          <Badge
+                            key={ageGroup}
+                            variant="outline"
+                            className="border-purple-300 text-purple-700 px-3 py-1 rounded-full flex items-center gap-1"
+                          >
+                            {ageGroup}
+                            <button
+                              type="button"
+                              onClick={() => removeAgeGroup(ageGroup)}
+                              className="ml-1 hover:bg-purple-100 rounded-full p-0.5"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
