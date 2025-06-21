@@ -15,7 +15,6 @@ import {
   User,
 } from "lucide-react";
 import Link from "next/link";
-import ProfilePage from "./profile/page";
 
 export default function DashboardPage() {
   const [activities, setActivities] = useState<any[]>([]);
