@@ -65,3 +65,21 @@ def get_activities():
 
     session.close()
     return jsonify(result)
+
+@activity_routes_blueprint.route("/activities/age_group", methods=["GET"])
+def get_age_groups():
+    session = SessionLocal()
+    age_groups = session.query(Activity.age_group).distinct().all()
+    session.close()
+
+    age_group_list = [age_group[0] for age_group in age_groups]
+    return jsonify(age_group_list)
+
+@activity_routes_blueprint.route("/activities/topics", methods=["GET"])
+def get_topics():
+    session = SessionLocal()
+    topics = session.query(Activity.topic).distinct().all()
+    session.close()
+
+    topic_list = [topic[0] for topic in topics]
+    return jsonify(topic_list)
