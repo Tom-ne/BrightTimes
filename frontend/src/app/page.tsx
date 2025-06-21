@@ -52,6 +52,9 @@ export default function HomePage() {
   const [selectedAgeGroup, setSelectedAgeGroup] = useState("All Ages");
 
   const [activities, setActivities] = useState([]);
+  const [topics, setTopics] = useState<string[]>(["All Topics"]);
+  const [ageGroups, setAgeGroups] = useState<string[]>(["All Ages"]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchActivities = async () => {
@@ -71,7 +74,40 @@ export default function HomePage() {
       }
     };
 
+    const fetchTopics = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/activities/topics");
+
+        if (!res.ok) throw new Error("Failed to fetch topics");
+
+        const data = await res.json();
+        data.unshift("All Topics"); 
+        setTopics(data);
+
+      } catch (error) {
+        console.error("Error fetching topics:", error);
+        setTopics([]);
+      }
+    }
+
+    const fetchAgeGroups = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/activities/age_groups");
+        
+        if (!res.ok) throw new Error("Failed to fetch age groups");
+
+        const data = await res.json();
+        data.unshift("All Ages");
+        setAgeGroups(data);
+      } catch (error) {
+        console.error("Error fetching age groups:", error);
+        setAgeGroups([]);
+      }
+    }
+
     fetchActivities();
+    fetchTopics();
+    fetchAgeGroups();
   }, [selectedTopic, selectedAgeGroup]);
 
   const parseIsraelDateTime = (dateStr: string, timeStr: string) => {
