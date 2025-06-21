@@ -12,8 +12,10 @@ import {
   Trash2,
   Plus,
   LogOut,
+  User,
 } from "lucide-react";
 import Link from "next/link";
+import ProfilePage from "./profile/page";
 
 export default function DashboardPage() {
   const [activities, setActivities] = useState<any[]>([]);
@@ -101,6 +103,12 @@ export default function DashboardPage() {
               <span className="text-gray-600">
                 {username ? `Welcome, ${username}!` : "Welcome!"}
               </span>
+              <Link href="/dashboard/profile">
+                <Button variant="outline" className="border-purple-200 text-purple-600 hover:bg-purple-50">
+                  <User className="w-4 h-4 mr-2" />
+                  Profile
+                </Button>
+              </Link>
               <Link href="/">
                 <Button
                   variant="outline"
