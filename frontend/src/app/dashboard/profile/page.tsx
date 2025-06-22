@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -10,35 +10,77 @@ import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Save, Upload, User, MapPin, Star, Calendar, Users } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-
-const organizerData = {
-  id: 1,
-  name: "Ms. Sarah",
-  bio: "Professional art teacher with 10+ years of experience working with children. I'm passionate about helping kids discover their creativity through fun, engaging activities.",
-  avatar: "/placeholder.svg?height=120&width=120",
-  totalActivities: 45,
-  totalParticipants: 1250,
-  joinedDate: "2022-03-15",
-  specialties: ["Arts & Crafts", "Creative Writing", "Music"], // the 5 most common topics
-}
+import { Toaster } from "@/components/ui/sonner"
+import { toast } from "sonner"
 
 export default function ProfilePage() {
+  const [organizerData, setOrganizerData] = useState<any>(null)
   const [formData, setFormData] = useState({
-    name: organizerData.name,
-    bio: organizerData.bio,
-    avatar: organizerData.avatar,
+    name: "",
+    bio: "",
+    avatar: "",
   })
   const [isLoading, setIsLoading] = useState(false)
-  const [previewImage, setPreviewImage] = useState(organizerData.avatar)
+  const [previewImage, setPreviewImage] = useState("")
   const router = useRouter()
+
+  useEffect(() => {
+    const fetchOrganizer = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/organizer/me", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token") ?? ""}`,
+          },
+          credentials: "include",
+        })
+
+        if (!res.ok) throw new Error("Failed to fetch organizer data")
+
+        const data = await res.json()
+        setOrganizerData(data)
+        setFormData({
+          name: data.name || "",
+          bio: data.bio || "",
+          avatar: data.avatarBase64 || "",
+        })
+        setPreviewImage(data.avatarBase64 || "/placeholder.svg")
+      } catch (error) {
+        console.error("Error loading profile:", error)
+      }
+    }
+
+    fetchOrganizer()
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    setTimeout(() => {
+
+    try {
+      const res = await fetch("http://localhost:5000/organizer/me", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token") ?? ""}`,
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          bio: formData.bio,
+          avatarBase64: formData.avatar,
+        }),
+      })
+
+      if (!res.ok) {
+        throw new Error("Failed to update profile")
+      }
+
+      toast.success("Profile saved successfully!")
+    } catch (err) {
+      console.error(err)
+      toast.error("Failed to save profile. Please try again.")
+    } finally {
       setIsLoading(false)
-      alert("Profile updated successfully!")
-    }, 1500)
+    }
   }
 
   const handleInputChange = (field: string, value: string) => {
@@ -64,6 +106,10 @@ export default function ProfilePage() {
       year: "numeric",
       month: "long",
     })
+  }
+
+  if (!organizerData) {
+    return <div className="p-8 text-center text-gray-500">Loading profile...</div>
   }
 
   return (
@@ -197,7 +243,7 @@ export default function ProfilePage() {
                   </div>
                   <div className="flex justify-between">
                     <div className="flex items-center"><Users className="w-5 h-5 mr-2" />Join button pressed</div>
-                    <span className="font-bold">{organizerData.totalParticipants}</span>
+                    <span className="font-bold">{organizerData.totalTimesJoinPressed}</span>
                   </div>
                   <div className="border-t border-pink-300 pt-2 text-sm text-purple-100">
                     Member since {formatDate(organizerData.joinedDate)}
@@ -254,6 +300,7 @@ export default function ProfilePage() {
           </div>
         </div>
       </main>
+      <Toaster />
     </div>
   )
 }

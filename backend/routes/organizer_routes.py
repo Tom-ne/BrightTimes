@@ -1,9 +1,10 @@
 from flask import Blueprint, jsonify, request, g
-from models import Activity
+from models import Activity, Organizer
 from db import SessionLocal
 from decorators import token_required
 from datetime import datetime
 from utils.link_validation import is_valid_link
+from collections import Counter
 
 organizer_routes_blueprint = Blueprint("organizers", __name__)
 
@@ -126,3 +127,64 @@ def get_activity(activity_id):
 
     session.close()
     return jsonify(result), 200
+
+
+@organizer_routes_blueprint.route("/organizer/me", methods=["GET"])
+@token_required
+def get_organizer_info():
+    session = SessionLocal()
+    try:
+        organizer = session.query(Organizer).filter_by(id=g.organizer_id).first()
+        if not organizer:
+            return jsonify({"error": "Organizer not found"}), 404
+
+        # Get the top 5 most common topics from organizer's activities
+        activities = session.query(Activity).filter_by(organizer_id=organizer.id).all()
+        topics = [activity.topic for activity in activities]
+        most_common_topics = [topic for topic, _ in Counter(topics).most_common(5)]
+
+        result = {
+            "id": organizer.id,
+            "username": organizer.username,
+            "name": getattr(organizer, "name", None),
+            "bio": getattr(organizer, "bio", None),
+            "avatarBase64": getattr(organizer, "avatar_base64", None),
+            "joinedDate": organizer.joined_date.isoformat() if organizer.joined_date else None,
+            "totalActivities": len(activities),
+            "totalTimesJoinPressed": sum(a.total_times_join_pressed for a in activities),
+            "specialties": most_common_topics,
+        }
+
+        return jsonify(result), 200
+    except Exception as e:
+        print(f"Error fetching organizer info: {e}")
+        return jsonify({"error": str(e)}), 500
+    finally:
+        session.close()
+
+
+@organizer_routes_blueprint.route("/organizer/me", methods=["PUT"])
+@token_required
+def update_organizer_info():
+    data = request.json
+    session = SessionLocal()
+    
+    try:
+        organizer = session.query(Organizer).filter_by(id=g.organizer_id).first()
+        if not organizer:
+            return jsonify({"error": "Organizer not found!"}), 404
+        
+        if "name" in data:
+            organizer.name = data["name"]
+        if "bio" in data:
+            organizer.bio = data["bio"]
+        if "avatarBase64" in data:
+            organizer.avatar_base64 = data["avatarBase64"]
+        
+        session.commit()
+        return jsonify({"message": "Profile updated successfully"}), 200
+    except Exception as e:
+        session.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        session.close()
