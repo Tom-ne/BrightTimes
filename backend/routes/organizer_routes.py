@@ -12,7 +12,7 @@ organizer_routes_blueprint = Blueprint("organizers", __name__)
 @token_required
 def add_activity():
     data = request.json
-    required_fields = ["title", "description", "topic", "age_group", "date", "time", "join_link"]
+    required_fields = ["title", "description", "topic", "age_group", "date", "time", "join_link", "duration"]
     if not all(field in data for field in required_fields):
         return jsonify({"error": "Missing required fields"}), 400
     

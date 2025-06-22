@@ -7,8 +7,25 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, Save, Calendar, Clock, Users, LinkIcon, Tag, FileText, Hourglass } from "lucide-react"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
+  ArrowLeft,
+  Save,
+  Calendar,
+  Clock,
+  Users,
+  LinkIcon,
+  Tag,
+  FileText,
+  Hourglass,
+  PackageOpen,
+} from "lucide-react"
 import Link from "next/link"
 import { useRouter, useParams } from "next/navigation"
 
@@ -19,6 +36,7 @@ export default function EditActivityPage() {
 
   const [topics, setTopics] = useState<string[]>([])
   const [ageGroups, setAgeGroups] = useState<string[]>([])
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -29,7 +47,9 @@ export default function EditActivityPage() {
     durationHours: "",
     durationMinutes: "",
     joinLink: "",
+    materials: "",
   })
+
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -75,6 +95,7 @@ export default function EditActivityPage() {
           durationHours: hours,
           durationMinutes: minutes,
           joinLink: data.joinLink || data.join_link || "",
+          materials: data.materials || "",
         })
       } catch (err: any) {
         setError(err.message)
@@ -111,6 +132,7 @@ export default function EditActivityPage() {
           time: formData.time,
           duration,
           join_link: formData.joinLink,
+          materials: formData.materials,
         }),
       })
 
@@ -166,7 +188,7 @@ export default function EditActivityPage() {
             <form onSubmit={handleSubmit} className="space-y-8">
               {/* Title */}
               <div className="space-y-2">
-                <Label htmlFor="title" className="text-base font-semibold text-gray-700 flex items-center">
+                <Label htmlFor="title" className="flex items-center font-semibold text-gray-700 text-base">
                   <FileText className="w-4 h-4 mr-2 text-purple-500" />
                   Activity Title
                 </Label>
@@ -175,7 +197,7 @@ export default function EditActivityPage() {
                   placeholder="e.g., Creative Art Workshop"
                   value={formData.title}
                   onChange={(e) => handleInputChange("title", e.target.value)}
-                  className="h-12 text-base border-2 border-purple-200 rounded-xl focus:border-purple-400"
+                  className="h-12 text-base border-2 border-purple-200 rounded-xl"
                   required
                 />
               </div>
@@ -183,14 +205,30 @@ export default function EditActivityPage() {
               {/* Description */}
               <div className="space-y-2">
                 <Label htmlFor="description" className="text-base font-semibold text-gray-700">
-                  Description (Optional)
+                  Description
                 </Label>
                 <Textarea
                   id="description"
                   placeholder="Describe what children will do in this activity..."
                   value={formData.description}
                   onChange={(e) => handleInputChange("description", e.target.value)}
-                  className="min-h-[100px] text-base border-2 border-purple-200 rounded-xl focus:border-purple-400"
+                  className="min-h-[100px] text-base border-2 border-purple-200 rounded-xl"
+                  required
+                />
+              </div>
+
+              {/* Materials */}
+              <div className="space-y-2">
+                <Label htmlFor="materials" className="flex items-center text-base font-semibold text-gray-700">
+                  <PackageOpen className="w-4 h-4 mr-2 text-purple-500" />
+                  Materials Required (Optional)
+                </Label>
+                <Textarea
+                  id="materials"
+                  placeholder="List any materials children need to bring (e.g., crayons, paper)"
+                  value={formData.materials}
+                  onChange={(e) => handleInputChange("materials", e.target.value)}
+                  className="min-h-[100px] text-base border-2 border-purple-200 rounded-xl"
                 />
               </div>
 
@@ -205,7 +243,7 @@ export default function EditActivityPage() {
                     <SelectTrigger className="h-12 text-base border-2 border-purple-200 rounded-xl">
                       <SelectValue placeholder="Select a topic" />
                     </SelectTrigger>
-                    <SelectContent className="bg-white border border-purple-200 shadow-md">
+                    <SelectContent>
                       {topics.map((topic) => (
                         <SelectItem key={topic} value={topic}>
                           {topic}
@@ -223,7 +261,7 @@ export default function EditActivityPage() {
                     <SelectTrigger className="h-12 text-base border-2 border-purple-200 rounded-xl">
                       <SelectValue placeholder="Select age group" />
                     </SelectTrigger>
-                    <SelectContent className="bg-white border border-purple-200 shadow-md">
+                    <SelectContent>
                       {ageGroups.map((age) => (
                         <SelectItem key={age} value={age}>
                           {age}
@@ -237,7 +275,7 @@ export default function EditActivityPage() {
               {/* Date, Time, Duration */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="date" className="text-base font-semibold text-gray-700 flex items-center">
+                  <Label htmlFor="date" className="flex items-center text-base font-semibold text-gray-700">
                     <Calendar className="w-4 h-4 mr-2 text-purple-500" />
                     Date
                   </Label>
@@ -246,12 +284,12 @@ export default function EditActivityPage() {
                     type="date"
                     value={formData.date}
                     onChange={(e) => handleInputChange("date", e.target.value)}
-                    className="h-12 text-base border-2 border-purple-200 rounded-xl focus:border-purple-400"
+                    className="h-12 text-base border-2 border-purple-200 rounded-xl"
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="time" className="text-base font-semibold text-gray-700 flex items-center">
+                  <Label htmlFor="time" className="flex items-center text-base font-semibold text-gray-700">
                     <Clock className="w-4 h-4 mr-2 text-purple-500" />
                     Time
                   </Label>
@@ -260,35 +298,33 @@ export default function EditActivityPage() {
                     type="time"
                     value={formData.time}
                     onChange={(e) => handleInputChange("time", e.target.value)}
-                    className="h-12 text-base border-2 border-purple-200 rounded-xl focus:border-purple-400"
+                    className="h-12 text-base border-2 border-purple-200 rounded-xl"
                     required
                   />
                 </div>
                 <div className="space-y-2 col-span-2">
-                  <Label className="text-base font-semibold text-gray-700 flex items-center">
+                  <Label className="flex items-center text-base font-semibold text-gray-700">
                     <Hourglass className="w-4 h-4 mr-2 text-purple-500" />
                     Duration
                   </Label>
                   <div className="grid grid-cols-2 gap-4">
                     <Input
-                      id="duration-hours"
                       type="number"
                       min="0"
                       max="23"
                       placeholder="Hours"
                       value={formData.durationHours}
                       onChange={(e) => handleInputChange("durationHours", e.target.value)}
-                      className="h-12 text-base border-2 border-purple-200 rounded-xl"
+                      className="h-12 border-2 border-purple-200 rounded-xl"
                     />
                     <Input
-                      id="duration-minutes"
                       type="number"
                       min="0"
                       max="59"
                       placeholder="Minutes"
                       value={formData.durationMinutes}
                       onChange={(e) => handleInputChange("durationMinutes", e.target.value)}
-                      className="h-12 text-base border-2 border-purple-200 rounded-xl"
+                      className="h-12 border-2 border-purple-200 rounded-xl"
                     />
                   </div>
                 </div>
@@ -296,17 +332,17 @@ export default function EditActivityPage() {
 
               {/* Join Link */}
               <div className="space-y-2">
-                <Label htmlFor="joinLink" className="text-base font-semibold text-gray-700 flex items-center">
+                <Label htmlFor="joinLink" className="flex items-center text-base font-semibold text-gray-700">
                   <LinkIcon className="w-4 h-4 mr-2 text-purple-500" />
-                  Join Link (Zoom, Google Meet, etc.)
+                  Join Link
                 </Label>
                 <Input
-                  id="joinLink"
                   type="url"
+                  id="joinLink"
                   placeholder="https://zoom.us/j/123456789"
                   value={formData.joinLink}
                   onChange={(e) => handleInputChange("joinLink", e.target.value)}
-                  className="h-12 text-base border-2 border-purple-200 rounded-xl focus:border-purple-400"
+                  className="h-12 text-base border-2 border-purple-200 rounded-xl"
                   required
                 />
               </div>
@@ -317,14 +353,7 @@ export default function EditActivityPage() {
                   disabled={isLoading}
                   className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-semibold px-8 py-3 rounded-xl text-base h-12 min-w-[150px]"
                 >
-                  {isLoading ? (
-                    "Saving..."
-                  ) : (
-                    <>
-                      <Save className="w-5 h-5 mr-2" />
-                      Save Changes
-                    </>
-                  )}
+                  {isLoading ? "Saving..." : <><Save className="w-5 h-5 mr-2" /> Save Changes</>}
                 </Button>
               </div>
             </form>

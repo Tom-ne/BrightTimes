@@ -14,6 +14,7 @@ class Activity(Base):
     date = Column(Date, nullable=False)
     time = Column(String, nullable=False)
     join_link = Column(String, nullable=False)
+    duration = Column(Integer, nullable=False) # Saved in minutes!
     
     total_times_join_pressed = Column(Integer, default=0)
     
