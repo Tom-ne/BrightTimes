@@ -8,18 +8,17 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, Save, Calendar, Clock, Users, LinkIcon, Tag, FileText } from "lucide-react"
+import { ArrowLeft, Save, Calendar, Clock, Users, LinkIcon, Tag, FileText, Hourglass } from "lucide-react"
 import Link from "next/link"
 import { useRouter, useParams } from "next/navigation"
 
-const topics = ["Arts & Crafts", "Science", "Reading", "Math", "Music", "Technology", "Sports", "Cooking"]
-const ageGroups = ["3-6 years", "4-8 years", "5-8 years", "6-10 years", "8-12 years", "8-14 years", "10+ years"]
-
 export default function EditActivityPage() {
   const router = useRouter()
-  const params = useParams() // Assuming URL like /activities/[id]/edit
+  const params = useParams()
   const activityId = params.id
 
+  const [topics, setTopics] = useState<string[]>([])
+  const [ageGroups, setAgeGroups] = useState<string[]>([])
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -27,12 +26,32 @@ export default function EditActivityPage() {
     ageGroup: "",
     date: "",
     time: "",
+    durationHours: "",
+    durationMinutes: "",
     joinLink: "",
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Fetch activity details on mount
+  useEffect(() => {
+    async function fetchOptions() {
+      try {
+        const [topicsRes, ageGroupsRes] = await Promise.all([
+          fetch("http://localhost:5000/activities/topics"),
+          fetch("http://localhost:5000/activities/age_groups"),
+        ])
+        const topicsData = await topicsRes.json()
+        const ageGroupsData = await ageGroupsRes.json()
+        setTopics(topicsData || [])
+        setAgeGroups(ageGroupsData || [])
+      } catch (err) {
+        console.error("Failed to fetch topics or age groups", err)
+      }
+    }
+
+    fetchOptions()
+  }, [])
+
   useEffect(() => {
     if (!activityId) return
 
@@ -44,6 +63,8 @@ export default function EditActivityPage() {
         if (!res.ok) throw new Error("Failed to fetch activity")
         const data = await res.json()
 
+        const [hours = "", minutes = ""] = (data.duration || "").split(":")
+
         setFormData({
           title: data.title || "",
           description: data.description || "",
@@ -51,12 +72,15 @@ export default function EditActivityPage() {
           ageGroup: data.ageGroup || data.age_group || "",
           date: data.date || "",
           time: data.time || "",
+          durationHours: hours,
+          durationMinutes: minutes,
           joinLink: data.joinLink || data.join_link || "",
         })
       } catch (err: any) {
         setError(err.message)
       }
     }
+
     fetchActivity()
   }, [activityId])
 
@@ -68,6 +92,8 @@ export default function EditActivityPage() {
     e.preventDefault()
     setIsLoading(true)
     setError(null)
+
+    const duration = `${formData.durationHours.padStart(2, "0")}:${formData.durationMinutes.padStart(2, "0")}`
 
     try {
       const res = await fetch(`http://localhost:5000/activities/${activityId}`, {
@@ -83,6 +109,7 @@ export default function EditActivityPage() {
           age_group: formData.ageGroup,
           date: formData.date,
           time: formData.time,
+          duration,
           join_link: formData.joinLink,
         }),
       })
@@ -178,7 +205,7 @@ export default function EditActivityPage() {
                     <SelectTrigger className="h-12 text-base border-2 border-purple-200 rounded-xl">
                       <SelectValue placeholder="Select a topic" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white border border-purple-200 shadow-md">
                       {topics.map((topic) => (
                         <SelectItem key={topic} value={topic}>
                           {topic}
@@ -196,7 +223,7 @@ export default function EditActivityPage() {
                     <SelectTrigger className="h-12 text-base border-2 border-purple-200 rounded-xl">
                       <SelectValue placeholder="Select age group" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white border border-purple-200 shadow-md">
                       {ageGroups.map((age) => (
                         <SelectItem key={age} value={age}>
                           {age}
@@ -207,8 +234,8 @@ export default function EditActivityPage() {
                 </div>
               </div>
 
-              {/* Date and Time */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Date, Time, Duration */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="date" className="text-base font-semibold text-gray-700 flex items-center">
                     <Calendar className="w-4 h-4 mr-2 text-purple-500" />
@@ -236,6 +263,34 @@ export default function EditActivityPage() {
                     className="h-12 text-base border-2 border-purple-200 rounded-xl focus:border-purple-400"
                     required
                   />
+                </div>
+                <div className="space-y-2 col-span-2">
+                  <Label className="text-base font-semibold text-gray-700 flex items-center">
+                    <Hourglass className="w-4 h-4 mr-2 text-purple-500" />
+                    Duration
+                  </Label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <Input
+                      id="duration-hours"
+                      type="number"
+                      min="0"
+                      max="23"
+                      placeholder="Hours"
+                      value={formData.durationHours}
+                      onChange={(e) => handleInputChange("durationHours", e.target.value)}
+                      className="h-12 text-base border-2 border-purple-200 rounded-xl"
+                    />
+                    <Input
+                      id="duration-minutes"
+                      type="number"
+                      min="0"
+                      max="59"
+                      placeholder="Minutes"
+                      value={formData.durationMinutes}
+                      onChange={(e) => handleInputChange("durationMinutes", e.target.value)}
+                      className="h-12 text-base border-2 border-purple-200 rounded-xl"
+                    />
+                  </div>
                 </div>
               </div>
 
