@@ -29,7 +29,8 @@ def add_activity():
             date=datetime.fromisoformat(data["date"]).date(),
             time=data["time"],
             join_link=data["join_link"],
-            organizer_id=g.organizer_id
+            organizer_id=g.organizer_id,
+            duration=data["duration"]
         )
         session.add(activity)
         session.commit()
