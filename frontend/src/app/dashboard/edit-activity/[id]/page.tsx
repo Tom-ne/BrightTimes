@@ -73,9 +73,10 @@ export default function EditActivityPage() {
   }, [])
 
   useEffect(() => {
-    if (!activityId) return
+    if (!activityId || topics.length === 0 || ageGroups.length === 0) return
 
     async function fetchActivity() {
+
       try {
         const res = await fetch(`http://localhost:5000/activities/${activityId}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -84,12 +85,24 @@ export default function EditActivityPage() {
         const data = await res.json()
 
         const [hours = "", minutes = ""] = (data.duration || "").split(":")
+        const isoDate = new Date(data.date).toISOString().split("T")[0]
+
+        if (!topics.includes(data.topic)) {
+          setTopics((prev) => [...prev, data.topic])
+        }
+        if (!ageGroups.includes(data.age_group)) {
+          setAgeGroups((prev) => [...prev, data.age_group])
+        }
+
+        console.log("Fetched activity data:", data)
+        console.log("age group:", data.age_group)
+        console.log("topic", data.topic)
         setFormData({
           title: data.title || "",
           description: data.description || "",
           topic: data.topic || "",
-          ageGroup: data.ageGroup || data.age_group || "",
-          date: data.date || "",
+          ageGroup: data.age_group || "",
+          date: isoDate,
           time: data.time || "",
           durationHours: hours,
           durationMinutes: minutes,
@@ -102,7 +115,7 @@ export default function EditActivityPage() {
     }
 
     fetchActivity()
-  }, [activityId])
+  }, [activityId, topics, ageGroups])
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
