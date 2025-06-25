@@ -61,3 +61,10 @@ class Organizer(Base, SerializableMixin):
     joined_date = Column(Date, nullable=True, default=date.today)
 
     activities = relationship("Activity", back_populates="organizer", cascade="all, delete-orphan")
+
+    def as_dict(self, include_relationships=False):
+        data = super().as_dict(include_relationships)
+        if 'password_hash' in data:
+            del data['password_hash']
+        return data
+    

@@ -37,13 +37,14 @@ export default function ProfilePage() {
         if (!res.ok) throw new Error("Failed to fetch organizer data")
 
         const data = await res.json()
+        console.log("Fetched organizer data:", data)
         setOrganizerData(data)
         setFormData({
           name: data.name || "",
           bio: data.bio || "",
-          avatar: data.avatarBase64 || "",
+          avatar: data.avatar_base64 || "",
         })
-        setPreviewImage(data.avatarBase64 || "/placeholder.svg")
+        setPreviewImage(data.avatar_base64 || "/placeholder.svg")
       } catch (error) {
         console.error("Error loading profile:", error)
       }
@@ -120,7 +121,7 @@ export default function ProfilePage() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-sm">K</span>
+                <span className="text-white font-bold text-sm">BT</span>
               </div>
               <h1 className="text-2xl font-bold text-gray-800">BrightTimes</h1>
               <Badge className="bg-purple-100 text-purple-700 ml-2">Organizer</Badge>
@@ -246,7 +247,7 @@ export default function ProfilePage() {
                     <span className="font-bold">{organizerData.totalTimesJoinPressed}</span>
                   </div>
                   <div className="border-t border-pink-300 pt-2 text-sm text-purple-100">
-                    Member since {formatDate(organizerData.joinedDate)}
+                    Member since {formatDate(organizerData.joined_date)}
                   </div>
                 </CardContent>
               </Card>

@@ -114,18 +114,17 @@ export default function ActivityDetailPage() {
 
   const handleJoinClick = (activityId: number) => async () => {
     try {
-      const res = await fetch(`http://localhost:5000/activities/join/${activityId}`, {
+      const res = await fetch(`http://localhost:5000/activities/${activityId}/join`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
       });
       if (!res.ok) {
-        throw new Error(`Failed to join activity (status ${res.status})`);
+        throw new Error("Failed to join activity");
       }
-    } catch (err) {
-      console.error("Error joining activity:", err);
-      alert("Failed to join activity. Please try again later.");
+    } catch (error) {
+      console.error("Error joining activity:", error);
     }
   };
 
@@ -251,7 +250,7 @@ export default function ActivityDetailPage() {
                   className="w-full bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-semibold py-3 rounded-xl text-base h-12 mb-3"
                 >
                   <a 
-                    href={activity.joinLink}
+                    href={activity.join_link}
                     target="_blank" 
                     rel="noopener noreferrer"
                   >

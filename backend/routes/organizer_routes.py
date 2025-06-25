@@ -152,7 +152,6 @@ def get_organizer_info():
                 "totalTimesJoinPressed": sum(a.total_times_join_pressed for a in activities),
                 "specialties": [topic for topic, _ in topic_counts.most_common(5)],
             })
-
             return jsonify(organizer_data), 200
 
     except Exception as e:
