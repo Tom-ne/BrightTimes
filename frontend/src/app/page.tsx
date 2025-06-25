@@ -134,6 +134,23 @@ export default function HomePage() {
     });
   };
 
+  const handleJoinClick = (activityId: number) => async () => {
+    try {
+      const res = await fetch(`http://localhost:5000/activities/${activityId}/join`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to join activity");
+      }
+    } catch (error) {
+      console.error("Error joining activity:", error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
       {/* Header */}
@@ -285,6 +302,7 @@ export default function HomePage() {
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center justify-center"
+                          onClick={handleJoinClick(activity.id)}
                         >
                           <Rocket className="w-5 h-5 mr-2" />
                           Quick Join
