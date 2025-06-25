@@ -68,10 +68,8 @@ export default function AddActivityPage() {
 
     const lowerTrimmed = trimmed.toLowerCase()
 
-    // Check for duplicates case-insensitively
     const existing = topics.some((topic) => topic.toLowerCase() === lowerTrimmed)
     if (existing) {
-      // select the existing topic
       setFormData((prev) => ({ ...prev, topic: trimmed }))
       setNewTopic("")
       setShowNewTopicInput(false)
@@ -80,21 +78,17 @@ export default function AddActivityPage() {
 
     let updatedTopics = [...topics]
 
-    // Remove the last custom topic if it exists
     if (lastCustomTopic) {
       updatedTopics = updatedTopics.filter((t) => t !== lastCustomTopic)
     }
 
-    // Add the new custom topic
     updatedTopics.push(trimmed)
 
-    // Update state *after* the list includes the new item
     setTopics(updatedTopics)
     setLastCustomTopic(trimmed)
     setNewTopic("")
     setShowNewTopicInput(false)
 
-    // Delay setting the form value until after topics update is reflected
     setTimeout(() => {
       setFormData((prev) => ({ ...prev, topic: trimmed }))
     }, 0)
