@@ -2,8 +2,27 @@ from sqlalchemy import Column, Integer, String, Date, ForeignKey, Text
 from sqlalchemy.orm import relationship
 from db import Base
 from datetime import date
+from sqlalchemy.ext.declarative import declared_attr
 
-class Activity(Base):
+class SerializableMixin:
+    @declared_attr
+    def __tablename__(cls):
+        return cls.__name__.lower()
+    
+    def as_dict(self, include_relationships=False):
+        data = {c.name: getattr(self, c.name) for c in self.__table__.columns}
+        if include_relationships:
+            for attr in self.__mapper__.relationships.keys():
+                related = getattr(self, attr)
+                if related is None:
+                    data[attr] = None
+                elif isinstance(related, list):
+                    data[attr] = [item.as_dict() for item in related]
+                else:
+                    data[attr] = related.as_dict()
+        return data
+
+class Activity(Base, SerializableMixin):
     __tablename__ = "activities"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -14,7 +33,7 @@ class Activity(Base):
     date = Column(Date, nullable=False)
     time = Column(String, nullable=False)
     join_link = Column(String, nullable=False)
-    duration = Column(Integer, nullable=False) # Saved in minutes!
+    duration = Column(Integer, nullable=False) # saved in hours:minutes
     
     total_times_join_pressed = Column(Integer, default=0)
     
@@ -22,14 +41,13 @@ class Activity(Base):
     organizer = relationship("Organizer", back_populates="activities")
 
 
-class Organizer(Base):
+class Organizer(Base, SerializableMixin):
     __tablename__ = "organizers"
 
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, nullable=False)
     password_hash = Column(String, nullable=False)
 
-    # New fields
     name = Column(String, nullable=True)
     bio = Column(Text, nullable=True)
     avatar_base64 = Column(Text, nullable=True)  # Store base64-encoded image

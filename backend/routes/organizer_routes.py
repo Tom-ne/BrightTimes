@@ -77,18 +77,7 @@ def get_my_activities():
         activities = session.query(Activity).filter_by(organizer_id=g.organizer_id).all()
 
         result = [
-            {
-                "id": a.id,
-                "title": a.title,
-                "description": a.description,
-                "topic": a.topic,
-                "ageGroup": a.age_group,
-                "date": a.date.isoformat(),
-                "time": a.time,
-                "joinLink": a.join_link,
-                "organizer": a.organizer.name if hasattr(a.organizer, 'name') else None,
-            }
-            for a in activities
+            a.as_dict(include_relationships=True) for a in activities
         ]
 
         return jsonify(result), 200
@@ -113,18 +102,7 @@ def get_activity(activity_id):
         session.close()
         return jsonify({"error": "Unauthorized – you don't own this activity"}), 403
 
-    result = {
-        "id": activity.id,
-        "title": activity.title,
-        "description": activity.description,
-        "description": getattr(activity, "description", ""),
-        "topic": activity.topic,
-        "ageGroup": activity.age_group,
-        "date": activity.date.isoformat(),
-        "time": activity.time,
-        "joinLink": activity.join_link,
-        "duration": activity.duration,
-    }
+    result = activity.as_dict(include_relationships=True)
 
     session.close()
     return jsonify(result), 200
@@ -133,35 +111,32 @@ def get_activity(activity_id):
 @organizer_routes_blueprint.route("/organizer/me", methods=["GET"])
 @token_required
 def get_organizer_info():
-    session = SessionLocal()
     try:
-        organizer = session.query(Organizer).filter_by(id=g.organizer_id).first()
-        if not organizer:
-            return jsonify({"error": "Organizer not found"}), 404
+        with SessionLocal() as session:
+            organizer: Organizer = session.query(Organizer).filter_by(id=g.organizer_id).first()
+            if not organizer:
+                return jsonify({"error": "Organizer not found"}), 404
 
-        # Get the top 5 most common topics from organizer's activities
-        activities = session.query(Activity).filter_by(organizer_id=organizer.id).all()
-        topics = [activity.topic for activity in activities]
-        most_common_topics = [topic for topic, _ in Counter(topics).most_common(5)]
+            # Convert organizer to dict using the mixin
+            organizer_data = organizer.as_dict(include_relationships=True)
+            # Remove password hash for security
+            organizer_data.pop("password_hash", None)
+            
+            # Compute extra fields not part of the DB model
+            activities = organizer.activities
+            topic_counts = Counter(activity.topic for activity in activities)
 
-        result = {
-            "id": organizer.id,
-            "username": organizer.username,
-            "name": getattr(organizer, "name", None),
-            "bio": getattr(organizer, "bio", None),
-            "avatarBase64": getattr(organizer, "avatar_base64", None),
-            "joinedDate": organizer.joined_date.isoformat() if organizer.joined_date else None,
-            "totalActivities": len(activities),
-            "totalTimesJoinPressed": sum(a.total_times_join_pressed for a in activities),
-            "specialties": most_common_topics,
-        }
+            organizer_data.update({
+                "totalActivities": len(activities),
+                "totalTimesJoinPressed": sum(a.total_times_join_pressed for a in activities),
+                "specialties": [topic for topic, _ in topic_counts.most_common(5)],
+            })
 
-        return jsonify(result), 200
+            return jsonify(organizer_data), 200
+
     except Exception as e:
-        print(f"Error fetching organizer info: {e}")
-        return jsonify({"error": str(e)}), 500
-    finally:
-        session.close()
+        print(f"Error in /organizer/me: {e}")
+        return jsonify({"error": "Internal server error"}), 500
 
 
 @organizer_routes_blueprint.route("/organizer/me", methods=["PUT"])
