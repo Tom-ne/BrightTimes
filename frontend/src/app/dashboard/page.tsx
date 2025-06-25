@@ -233,25 +233,27 @@ export default function DashboardPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-3 mt-4 lg:mt-0">
-                    <Link href={`/dashboard/edit-activity/${activity.id}`}>
+                  {!activity.isPast && (
+                    <div className="flex items-center space-x-3 mt-4 lg:mt-0">
+                      <Link href={`/dashboard/edit-activity/${activity.id}`}>
+                        <Button
+                          variant="outline"
+                          className="border-blue-200 text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-xl"
+                        >
+                          <Edit className="w-4 h-4 mr-2" />
+                          Edit
+                        </Button>
+                      </Link>
                       <Button
                         variant="outline"
-                        className="border-blue-200 text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-xl"
+                        className="border-red-200 text-red-600 hover:bg-red-50 px-4 py-2 rounded-xl"
+                        onClick={() => handleDelete(activity.id)}
                       >
-                        <Edit className="w-4 h-4 mr-2" />
-                        Edit
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete
                       </Button>
-                    </Link>
-                    <Button
-                      variant="outline"
-                      className="border-red-200 text-red-600 hover:bg-red-50 px-4 py-2 rounded-xl"
-                      onClick={() => handleDelete(activity.id)}
-                    >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Delete
-                    </Button>
-                  </div>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
