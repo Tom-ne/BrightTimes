@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, Save, Calendar, Clock, Users, LinkIcon, Tag, FileText, X, Plus } from "lucide-react"
+import { ArrowLeft, Save, Calendar, Clock, Users, LinkIcon, Tag, FileText, X, Plus, Hourglass } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
@@ -21,7 +21,10 @@ export default function AddActivityPage() {
     ageGroup: "",
     date: "",
     time: "",
+    durationHours: "",
+    durationMinutes: "",
     joinLink: "",
+    materials: "",
   })
 
   const [isLoading, setIsLoading] = useState(false)
@@ -155,6 +158,7 @@ export default function AddActivityPage() {
     e.preventDefault()
     setIsLoading(true)
 
+    const duration = `${formData.durationHours.padStart(2, "0")}:${formData.durationMinutes.padStart(2, "0")}`
     try {
       const payload = {
         title: formData.title,
@@ -164,6 +168,8 @@ export default function AddActivityPage() {
         time: formData.time,
         join_link: formData.joinLink,
         description: formData.description,
+        duration,
+        materials: formData.materials,
       }
 
       const response = await fetch("http://localhost:5000/activities", {
@@ -257,6 +263,21 @@ export default function AddActivityPage() {
                   onChange={(e) => handleInputChange("description", e.target.value)}
                   className="min-h-[100px] text-base border-2 border-purple-200 rounded-xl focus:border-purple-400"
                   required
+                />
+              </div>
+
+              {/* Materials */}
+              <div className="space-y-2">
+                <Label htmlFor="materials" className="text-base font-semibold text-gray-700 flex items-center">
+                  <FileText className="w-4 h-4 mr-2 text-purple-500" />
+                  Materials Needed (Optional)
+                </Label>
+                <Textarea
+                  id="materials"
+                  placeholder="List any materials children will need separated by commas (e.g., paper,crayons)"
+                  value={formData.materials}
+                  onChange={(e) => handleInputChange("materials", e.target.value)}
+                  className="min-h-[100px] text-base border-2 border-purple-200 rounded-xl focus:border-purple-400"
                 />
               </div>
 
@@ -435,8 +456,8 @@ export default function AddActivityPage() {
                 </div>
               </div>
 
-              {/* Date and Time */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Date and Time, Duration */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="date" className="text-base font-semibold text-gray-700 flex items-center">
                     <Calendar className="w-4 h-4 mr-2 text-purple-500" />
@@ -464,6 +485,32 @@ export default function AddActivityPage() {
                     className="h-12 text-base border-2 border-purple-200 rounded-xl focus:border-purple-400"
                     required
                   />
+                </div>
+                <div className="space-y-2 col-span-2">
+                  <Label className="text-base font-semibold text-gray-700 flex items-center">
+                    <Hourglass className="w-4 h-4 mr-2 text-purple-500" />
+                    Duration
+                  </Label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <Input
+                      type="number"
+                      min="0"
+                      max="23"
+                      placeholder="Hours"
+                      value={formData.durationHours}
+                      onChange={(e) => handleInputChange("durationHours", e.target.value)}
+                      className="h-12 text-base border-2 border-purple-200 rounded-xl focus:border-purple-400"
+                    />
+                    <Input
+                      type="number"
+                      min="0"
+                      max="59"
+                      placeholder="Minutes"
+                      value={formData.durationMinutes}
+                      onChange={(e) => handleInputChange("durationMinutes", e.target.value)}
+                      className="h-12 text-base border-2 border-purple-200 rounded-xl focus:border-purple-400"
+                    />
+                  </div>
                 </div>
               </div>
 
