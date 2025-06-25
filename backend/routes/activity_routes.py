@@ -52,6 +52,16 @@ def get_activities():
     session.close()
     return jsonify(result)
 
+@activity_routes_blueprint.route("/activities/<int:activity_id>/join", methods=["POST"])
+def join_activity(activity_id):
+    with SessionLocal() as session:
+        activity = session.query(Activity).filter_by(id=activity_id).first()
+        if not activity:
+            return jsonify({"error": "Activity not found"}), 404
+        activity.total_times_join_pressed += 1
+        session.commit()
+        return jsonify({"message": "Successfully joined the activity", "totalTimesJoinPressed": activity.total_times_join_pressed})
+
 @activity_routes_blueprint.route("/activities/age_groups", methods=["GET"])
 def get_age_groups():
     session = SessionLocal()
