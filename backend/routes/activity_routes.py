@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from models import Activity
+from models import Activity, Organizer
 from db import SessionLocal
 from datetime import datetime
 
@@ -30,20 +30,7 @@ def get_activities():
     activities = query.all()
 
     result = [
-        {
-            "id": a.id,
-            "title": a.title,
-            "description": a.description,
-            "topic": a.topic,
-            "ageGroup": a.age_group,
-            "date": a.date.isoformat(),
-            "time": a.time,
-            "joinLink": a.join_link,
-            "organizer": {
-                "username": a.organizer.username,
-            }
-        }
-        for a in activities
+        a.as_dict(include_relationships=True) for a in activities
     ]
 
     # Sort activities by date and time
@@ -51,6 +38,7 @@ def get_activities():
 
     session.close()
     return jsonify(result)
+
 
 @activity_routes_blueprint.route("/activities/<int:activity_id>/join", methods=["POST"])
 def join_activity(activity_id):
@@ -62,6 +50,7 @@ def join_activity(activity_id):
         session.commit()
         return jsonify({"message": "Successfully joined the activity", "totalTimesJoinPressed": activity.total_times_join_pressed})
 
+
 @activity_routes_blueprint.route("/activities/age_groups", methods=["GET"])
 def get_age_groups():
     session = SessionLocal()
@@ -71,6 +60,7 @@ def get_age_groups():
     age_group_list = [age_group[0] for age_group in age_groups]
     return jsonify(age_group_list)
 
+
 @activity_routes_blueprint.route("/activities/topics", methods=["GET"])
 def get_topics():
     session = SessionLocal()
@@ -79,3 +69,23 @@ def get_topics():
 
     topic_list = [topic[0] for topic in topics]
     return jsonify(topic_list)
+
+
+@activity_routes_blueprint.route("/activities/<int:activity_id>", methods=["GET"])
+def get_activity(activity_id):
+    with SessionLocal() as session:
+        activity = session.query(Activity).filter_by(id=activity_id).first()
+        if not activity:
+            return jsonify({"error": "Activity not found"}), 404
+        data = activity.as_dict(include_relationships=True)
+        return jsonify(data), 200
+
+
+@activity_routes_blueprint.route("/organizer/<int:organizer_id>", methods=["GET"])
+def get_organizer(organizer_id):
+    with SessionLocal() as session:
+        organizer = session.query(Organizer).filter_by(id=organizer_id).first()
+        if not organizer:
+            return jsonify({"error": "Organizer not found"}), 404
+        data = organizer.as_dict(include_relationships=True)
+        return jsonify(data), 200

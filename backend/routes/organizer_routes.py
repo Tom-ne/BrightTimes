@@ -112,7 +112,7 @@ def get_my_activities():
         return jsonify({"error": str(e)}), 500
     finally:
         session.close()
-        
+
 
 @organizer_routes_blueprint.route("/activities/<int:activity_id>", methods=["GET"])
 @token_required
@@ -145,8 +145,6 @@ def get_organizer_info():
 
             # Convert organizer to dict using the mixin
             organizer_data = organizer.as_dict(include_relationships=True)
-            # Remove password hash for security
-            organizer_data.pop("password_hash", None)
             
             # Compute extra fields not part of the DB model
             activities = organizer.activities
