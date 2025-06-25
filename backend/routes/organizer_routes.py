@@ -123,6 +123,7 @@ def get_activity(activity_id):
         "date": activity.date.isoformat(),
         "time": activity.time,
         "joinLink": activity.join_link,
+        "duration": activity.duration,
     }
 
     session.close()

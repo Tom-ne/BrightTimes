@@ -84,7 +84,6 @@ export default function EditActivityPage() {
         const data = await res.json()
 
         const [hours = "", minutes = ""] = (data.duration || "").split(":")
-
         setFormData({
           title: data.title || "",
           description: data.description || "",
