@@ -224,7 +224,7 @@ export default function EditActivityPage() {
                 </Label>
                 <Textarea
                   id="materials"
-                  placeholder="List any materials children need to bring (e.g., crayons, paper)"
+                  placeholder="List any materials children need to bring separated by commas (e.g., crayons,paper)"
                   value={formData.materials}
                   onChange={(e) => handleInputChange("materials", e.target.value)}
                   className="min-h-[100px] text-base border-2 border-purple-200 rounded-xl"
