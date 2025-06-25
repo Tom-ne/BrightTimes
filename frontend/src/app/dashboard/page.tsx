@@ -166,7 +166,7 @@ export default function DashboardPage() {
                   </p>
                   <p className="text-3xl font-bold">
                     {activities.reduce(
-                      (sum, activity) => sum + (activity.participants || 0),
+                      (sum, activity) => sum + (activity.total_times_join_pressed || 0),
                       0
                     )}
                   </p>
@@ -213,7 +213,7 @@ export default function DashboardPage() {
                             variant="outline"
                             className="border-purple-300 text-purple-700 px-3 py-1 rounded-full"
                           >
-                            {activity.ageGroup}
+                            {activity.age_group}
                           </Badge>
                         </div>
                       </div>
@@ -229,7 +229,7 @@ export default function DashboardPage() {
                       </div>
                       <div className="flex items-center text-gray-600">
                         <Users className="w-4 h-4 mr-2 text-purple-500" />
-                        <span>{activity.participants || 0} participants</span>
+                        <span>{activity.total_times_join_pressed || 0} Times join clicked</span>
                       </div>
                     </div>
                   </div>
