@@ -11,7 +11,6 @@ def get_activities():
 
     topic = request.args.get("topic")
     age_group = request.args.get("age_group")
-    time_filter = request.args.get("time")  # Morning / Afternoon / Evening
 
     query = session.query(Activity)
 
@@ -21,30 +20,14 @@ def get_activities():
     if age_group and age_group != "All Ages":
         query = query.filter(Activity.age_group == age_group)
 
-    if time_filter and time_filter != "All Times":
-        def convert_time_to_hour(time_str):
-            try:
-                return datetime.strptime(time_str, "%I:%M %p").hour
-            except ValueError:
-                return None
-
-        all_activities = query.all()
-        filtered = []
-
-        for a in all_activities:
-            hour = convert_time_to_hour(a.time)
-            if hour is None:
-                continue
-
-            if time_filter == "Morning" and hour < 12:
-                filtered.append(a)
-            elif time_filter == "Afternoon" and 12 <= hour < 17:
-                filtered.append(a)
-            elif time_filter == "Evening" and hour >= 17:
-                filtered.append(a)
-        activities = filtered
-    else:
-        activities = query.all()
+    # check if the activity date and time is in the past
+    today = datetime.now().date()
+    current_time = datetime.now().time()
+    query = query.filter(
+        (Activity.date > today) | 
+        ((Activity.date == today) & (Activity.time >= current_time))
+    )
+    activities = query.all()
 
     result = [
         {
@@ -62,6 +45,9 @@ def get_activities():
         }
         for a in activities
     ]
+
+    # Sort activities by date and time
+    result.sort(key=lambda x: (x["date"], x["time"]))
 
     session.close()
     return jsonify(result)
