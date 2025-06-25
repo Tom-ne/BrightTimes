@@ -34,6 +34,7 @@ class Activity(Base, SerializableMixin):
     time = Column(String, nullable=False)
     join_link = Column(String, nullable=False)
     duration = Column(Integer, nullable=False) # saved in hours:minutes
+    materials = Column(Text, nullable=True)  # save materials as string separated by commas
     
     total_times_join_pressed = Column(Integer, default=0)
     

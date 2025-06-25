@@ -261,7 +261,7 @@ export default function HomePage() {
                         variant="outline"
                         className="border-purple-300 text-purple-700 px-3 py-1 rounded-full text-sm"
                       >
-                        {activity.ageGroup}
+                        {activity.age_group}
                       </Badge>
                     </div>
                     <CardTitle className="text-xl font-bold text-gray-800 leading-tight">

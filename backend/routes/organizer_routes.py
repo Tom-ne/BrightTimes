@@ -30,7 +30,8 @@ def add_activity():
             time=data["time"],
             join_link=data["join_link"],
             organizer_id=g.organizer_id,
-            duration=data["duration"]
+            duration=data["duration"],
+            materials=data.get("materials", "")
         )
         session.add(activity)
         session.commit()
@@ -68,6 +69,20 @@ def update_activity(activity_id):
     session.commit()
     session.close()
     return jsonify({"message": "Activity updated"})
+
+
+@organizer_routes_blueprint.route("/activities/<int:activity_id>", methods=["DELETE"])
+@token_required
+def delete_activity(activity_id):
+    with SessionLocal() as session:
+        activity = session.query(Activity).filter_by(id=activity_id).first()
+        if not activity:
+            return jsonify({"error": "Activity not found"}), 404
+        if activity.organizer_id != g.organizer_id:
+            return jsonify({"error": "Unauthorized – you don't own this activity"}), 403
+        session.delete(activity)
+        session.commit()
+        return jsonify({"message": "Activity deleted"}), 200
 
 
 @organizer_routes_blueprint.route("/activities/mine", methods=["GET"])
@@ -114,26 +129,6 @@ def get_my_activities():
         session.close()
 
 
-@organizer_routes_blueprint.route("/activities/<int:activity_id>", methods=["GET"])
-@token_required
-def get_activity(activity_id):
-    session = SessionLocal()
-    activity = session.query(Activity).filter_by(id=activity_id).first()
-
-    if not activity:
-        session.close()
-        return jsonify({"error": "Activity not found"}), 404
-
-    if activity.organizer_id != g.organizer_id:
-        session.close()
-        return jsonify({"error": "Unauthorized – you don't own this activity"}), 403
-
-    result = activity.as_dict(include_relationships=True)
-
-    session.close()
-    return jsonify(result), 200
-
-
 @organizer_routes_blueprint.route("/organizer/me", methods=["GET"])
 @token_required
 def get_organizer_info():
@@ -144,10 +139,12 @@ def get_organizer_info():
                 return jsonify({"error": "Organizer not found"}), 404
 
             # Convert organizer to dict using the mixin
-            organizer_data = organizer.as_dict(include_relationships=True)
+            organizer_data = organizer.as_dict()
             
             # Compute extra fields not part of the DB model
-            activities = organizer.activities
+            # get all activities for this organizer
+            activities = session.query(Activity).filter_by(organizer_id=g.organizer_id).all()
+
             topic_counts = Counter(activity.topic for activity in activities)
 
             organizer_data.update({

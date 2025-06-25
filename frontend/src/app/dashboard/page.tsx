@@ -56,9 +56,25 @@ export default function DashboardPage() {
   }, []);
 
   const handleDelete = (id: number) => {
-    if (confirm("Are you sure you want to delete this activity?")) {
-      setActivities(activities.filter((activity) => activity.id !== id));
-    }
+    if (!confirm("Are you sure you want to delete this activity?")) return;
+    setActivities(activities.filter((activity) => activity.id !== id));
+    fetch(`http://localhost:5000/activities/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      credentials: "include",
+    })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`Failed to delete activity: ${res.statusText}`);
+        }
+        return res.json();
+      })
+      .catch((err) => {
+        setError(err.message || "Failed to delete activity");
+      });
   };
 
   const formatDate = (dateString: string) => {

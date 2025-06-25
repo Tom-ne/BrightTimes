@@ -81,11 +81,11 @@ def get_activity(activity_id):
         return jsonify(data), 200
 
 
-@activity_routes_blueprint.route("/organizer/<int:organizer_id>", methods=["GET"])
-def get_organizer(organizer_id):
+@activity_routes_blueprint.route("/activities/organizer/<int:organizer_id>", methods=["GET"])
+def get_organizer_activities(organizer_id):
     with SessionLocal() as session:
-        organizer = session.query(Organizer).filter_by(id=organizer_id).first()
-        if not organizer:
-            return jsonify({"error": "Organizer not found"}), 404
-        data = organizer.as_dict(include_relationships=True)
-        return jsonify(data), 200
+        activities = session.query(Activity).filter_by(organizer_id=organizer_id).all()
+        if not activities:
+            return jsonify({"error": "No activities found for this organizer"}), 404
+        result = [a.as_dict(include_relationships=True) for a in activities]
+        return jsonify(result), 200
