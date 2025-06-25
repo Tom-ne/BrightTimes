@@ -40,6 +40,12 @@ class Activity(Base, SerializableMixin):
     organizer_id = Column(Integer, ForeignKey("organizers.id"), nullable=False)
     organizer = relationship("Organizer", back_populates="activities")
 
+    def as_dict(self, include_relationships=False):
+        data = super().as_dict(include_relationships)
+        if 'password_hash' in data['organizer']:
+            del data['organizer']['password_hash']
+        return data
+
 
 class Organizer(Base, SerializableMixin):
     __tablename__ = "organizers"
