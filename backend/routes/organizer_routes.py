@@ -81,6 +81,27 @@ def get_my_activities():
             a.as_dict(include_relationships=True) for a in activities
         ]
 
+        # if an activity is in the past, add a flag
+        today = datetime.now().date()
+        now = datetime.now().time()
+
+        for activity in result:
+            if isinstance(activity["date"], str):
+                activity_date = datetime.fromisoformat(activity["date"]).date()
+            else:
+                activity_date = activity["date"]
+
+            activity_time = datetime.strptime(activity["time"], "%H:%M").time()
+
+            if activity_date < today or (activity_date == today and activity_time < now):
+                activity["isPast"] = True
+            else:
+                activity["isPast"] = False
+
+        # sort activities that the most recent ones come first
+        result.sort(key=lambda x: (x["date"], x["time"]), reverse=True)
+
+
         return jsonify(result), 200
     except Exception as e:
         print(f"Error fetching activities: {e}")
