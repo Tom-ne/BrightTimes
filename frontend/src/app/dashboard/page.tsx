@@ -180,9 +180,9 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-orange-100 text-sm font-medium">
-                    This Week
+                    Remaining This Week
                   </p>
-                  <p className="text-3xl font-bold">{activities.length}</p>
+                  <p className="text-3xl font-bold">{activities.filter((a) => a.isThisWeek).length}</p>
                 </div>
                 <Clock className="w-8 h-8 text-orange-200" />
               </div>
