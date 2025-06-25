@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, request, g
 from models import Activity, Organizer
 from db import SessionLocal
 from decorators import token_required
-from datetime import datetime
+from datetime import datetime, timedelta
 from utils.link_validation import is_valid_link
 from collections import Counter
 
@@ -76,31 +76,35 @@ def get_my_activities():
     session = SessionLocal()
     try:
         activities = session.query(Activity).filter_by(organizer_id=g.organizer_id).all()
+        result = [a.as_dict(include_relationships=True) for a in activities]
 
-        result = [
-            a.as_dict(include_relationships=True) for a in activities
-        ]
-
-        # if an activity is in the past, add a flag
         today = datetime.now().date()
         now = datetime.now().time()
 
+        # Calculate the current week's Sunday and Saturday
+        weekday = today.weekday()  # Monday=0 ... Sunday=6
+        days_since_sunday = (weekday + 1) % 7
+        sunday_start = today - timedelta(days=days_since_sunday)
+        saturday_end = sunday_start + timedelta(days=6)
+
         for activity in result:
+            # Parse activity date
             if isinstance(activity["date"], str):
                 activity_date = datetime.fromisoformat(activity["date"]).date()
             else:
                 activity_date = activity["date"]
 
+            # Parse activity time
             activity_time = datetime.strptime(activity["time"], "%H:%M").time()
 
-            if activity_date < today or (activity_date == today and activity_time < now):
-                activity["isPast"] = True
-            else:
-                activity["isPast"] = False
+            # isPast flag: activity date/time before now
+            activity["isPast"] = activity_date < today or (activity_date == today and activity_time < now)
 
-        # sort activities that the most recent ones come first
+            # isThisWeek flag: activity date between this Sunday and Saturday, and not in the past
+            activity["isThisWeek"] = (sunday_start <= activity_date <= saturday_end) and (activity_date >= today)
+
+        # Sort activities by date/time descending (most recent first)
         result.sort(key=lambda x: (x["date"], x["time"]), reverse=True)
-
 
         return jsonify(result), 200
     except Exception as e:
@@ -108,7 +112,7 @@ def get_my_activities():
         return jsonify({"error": str(e)}), 500
     finally:
         session.close()
-
+        
 
 @organizer_routes_blueprint.route("/activities/<int:activity_id>", methods=["GET"])
 @token_required
