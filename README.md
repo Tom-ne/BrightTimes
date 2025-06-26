@@ -4,6 +4,10 @@
 
 ---
 
+## 🎯 Things to improve
+* Better encryption and data security for login
+* Multi language support
+
 ## ✨ Features
 
 * **For Parents**
