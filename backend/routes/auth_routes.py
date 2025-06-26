@@ -5,7 +5,7 @@ import datetime
 import jwt
 import uuid
 from utils.security import verify_password  # your hashlib-based verifier
-from app import limiter
+from extensions import limiter
 from decorators import token_required
 
 auth_routes_blueprint = Blueprint("auth", __name__)
