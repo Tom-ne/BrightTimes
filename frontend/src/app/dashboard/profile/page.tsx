@@ -29,7 +29,7 @@ export default function ProfilePage() {
       try {
         const res = await fetch("http://localhost:5000/organizer/me", {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token") ?? ""}`,
+            Authorization: `Bearer ${localStorage.getItem("access_token") ?? ""}`,
           },
           credentials: "include",
         })
@@ -62,7 +62,7 @@ export default function ProfilePage() {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token") ?? ""}`,
+          Authorization: `Bearer ${localStorage.getItem("access_token") ?? ""}`,
         },
         body: JSON.stringify({
           name: formData.name,
