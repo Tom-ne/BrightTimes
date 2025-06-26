@@ -1,6 +1,8 @@
 from functools import wraps
 from flask import request, jsonify, current_app, g
 import jwt
+from db import SessionLocal
+from models import TokenBlocklist
 
 def token_required(f):
     @wraps(f)
@@ -18,6 +20,14 @@ def token_required(f):
                 current_app.config["SECRET_KEY"],
                 algorithms=[current_app.config["ALGORITHM"]]
             )
+            # Check if token has been revoked
+            session = SessionLocal()
+            jti = data.get("jti")
+            if not jti or session.query(TokenBlocklist).filter_by(jti=jti).first():
+                session.close()
+                return jsonify({"error": "Token has been revoked"}), 401
+            session.close()
+
             # Attach to global request context
             g.organizer_id = data["organizer_id"]
             g.username = data["username"]

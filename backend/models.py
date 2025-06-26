@@ -4,6 +4,12 @@ from db import Base
 from datetime import date
 from sqlalchemy.ext.declarative import declared_attr
 
+class TokenBlocklist(Base):
+    __tablename__ = "token_blocklist"
+    id = Column(Integer, primary_key=True)
+    jti = Column(String, nullable=False, index=True)
+    created_at = Column(Date, default=date.today)
+
 class SerializableMixin:
     @declared_attr
     def __tablename__(cls):

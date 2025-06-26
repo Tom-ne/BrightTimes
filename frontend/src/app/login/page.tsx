@@ -22,7 +22,13 @@ export default function LoginPage() {
     setError("")
 
     try {
-      const res = await fetch("http://localhost:5000/auth/login?username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password))
+      const res = await fetch("http://localhost:5000/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      })
 
       if (!res.ok) {
         const data = await res.json()
@@ -32,7 +38,8 @@ export default function LoginPage() {
       }
 
       const data = await res.json()
-      localStorage.setItem("token", data.token)
+      localStorage.setItem("access_token", data.access_token)
+      localStorage.setItem("refresh_token", data.refresh_token)
       localStorage.setItem("username", data.username)
       router.push("/dashboard")
     } catch (err) {

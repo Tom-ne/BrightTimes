@@ -3,3 +3,4 @@ flask_cors
 SQLAlchemy
 pyjwt
 dotenv
+Flask-Limiter
