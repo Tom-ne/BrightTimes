@@ -1,6 +1,6 @@
 # 🌞 BrightTimes
 
-**BrightTimes** is a web platform that helps parents easily discover and book free or low-cost online activities for children, organized by a wide range of educational and community organizations. Originally inspired by the chaos of trying to manage kids’ online schedules during times of crisis, BrightTimes brings structure, simplicity, and accessibility to children's remote enrichment.
+**BrightTimes** is a web platform that helps parents easily discover and book free online activities for children, organized by a wide range of educational and community organizations. Originally inspired by the chaos of trying to manage kids’ online schedules during times of crisis, BrightTimes brings structure, simplicity, and accessibility to children's remote enrichment.
 
 ---
 
