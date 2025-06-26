@@ -8,13 +8,13 @@ import {
   Calendar,
   Clock,
   Users,
-  ExternalLink,
   ArrowLeft,
   Share2,
   Gift,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { fetchWithAuth } from "@/lib/api";
 
 export default function ActivityDetailPage() {
   const params = useParams();
@@ -29,7 +29,7 @@ export default function ActivityDetailPage() {
       setError(null);
 
       try {
-        const res = await fetch(`http://localhost:5000/activities/${activityId}`);
+        const res = await fetchWithAuth(`http://localhost:5000/activities/${activityId}`);
         if (!res.ok) throw new Error(`Activity not found (status ${res.status})`);
 
         const data = await res.json();
@@ -37,7 +37,7 @@ export default function ActivityDetailPage() {
 
         if (organizerId) {
           const [organizerActivities] = await Promise.all([
-            fetch(`http://localhost:5000/activities/organizer/${organizerId}`).then((r) => r.json())
+            fetchWithAuth(`http://localhost:5000/activities/organizer/${organizerId}`).then((r) => r.json())
           ]);
 
           data.organizer.totalActivities = organizerActivities.length;
@@ -114,7 +114,7 @@ export default function ActivityDetailPage() {
 
   const handleJoinClick = (activityId: number) => async () => {
     try {
-      const res = await fetch(`http://localhost:5000/activities/${activityId}/join`, {
+      const res = await fetchWithAuth(`http://localhost:5000/activities/${activityId}/join`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -7,11 +7,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Save, Upload, User, MapPin, Star, Calendar, Users } from "lucide-react"
+import { ArrowLeft, Save, Upload, User, Calendar, Users } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Toaster } from "@/components/ui/sonner"
 import { toast } from "sonner"
+import { fetchWithAuth } from "@/lib/api"
 
 export default function ProfilePage() {
   const [organizerData, setOrganizerData] = useState<any>(null)
@@ -27,12 +28,7 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchOrganizer = async () => {
       try {
-        const res = await fetch("http://localhost:5000/organizer/me", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token") ?? ""}`,
-          },
-          credentials: "include",
-        })
+        const res = await fetchWithAuth("http://localhost:5000/organizer/me")
 
         if (!res.ok) throw new Error("Failed to fetch organizer data")
 
@@ -58,11 +54,10 @@ export default function ProfilePage() {
     setIsLoading(true)
 
     try {
-      const res = await fetch("http://localhost:5000/organizer/me", {
+      const res = await fetchWithAuth("http://localhost:5000/organizer/me", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("access_token") ?? ""}`,
         },
         body: JSON.stringify({
           name: formData.name,

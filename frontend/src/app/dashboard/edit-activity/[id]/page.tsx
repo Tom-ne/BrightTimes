@@ -25,9 +25,10 @@ import {
   FileText,
   Hourglass,
   PackageOpen,
-} from "lucide-react"
+} from "lucide-react";
 import Link from "next/link"
 import { useRouter, useParams } from "next/navigation"
+import { fetchWithAuth } from "@/lib/api"
 
 export default function EditActivityPage() {
   const router = useRouter()
@@ -57,8 +58,8 @@ export default function EditActivityPage() {
     async function fetchOptions() {
       try {
         const [topicsRes, ageGroupsRes] = await Promise.all([
-          fetch("http://localhost:5000/activities/topics"),
-          fetch("http://localhost:5000/activities/age_groups"),
+          fetchWithAuth("http://localhost:5000/activities/topics"),
+          fetchWithAuth("http://localhost:5000/activities/age_groups"),
         ])
         const topicsData = await topicsRes.json()
         const ageGroupsData = await ageGroupsRes.json()
@@ -78,9 +79,7 @@ export default function EditActivityPage() {
     async function fetchActivity() {
 
       try {
-        const res = await fetch(`http://localhost:5000/activities/${activityId}`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        })
+        const res = await fetchWithAuth(`http://localhost:5000/activities/${activityId}`)
         if (!res.ok) throw new Error("Failed to fetch activity")
         const data = await res.json()
 
@@ -129,11 +128,10 @@ export default function EditActivityPage() {
     const duration = `${formData.durationHours.padStart(2, "0")}:${formData.durationMinutes.padStart(2, "0")}`
 
     try {
-      const res = await fetch(`http://localhost:5000/activities/${activityId}`, {
+      const res = await fetchWithAuth(`http://localhost:5000/activities/${activityId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify({
           title: formData.title,

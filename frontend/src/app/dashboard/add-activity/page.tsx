@@ -12,6 +12,7 @@ import { ArrowLeft, Save, Calendar, Clock, Users, LinkIcon, Tag, FileText, X, Pl
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
+import { fetchWithAuth } from "@/lib/api"
 
 export default function AddActivityPage() {
   const [formData, setFormData] = useState({
@@ -42,8 +43,8 @@ export default function AddActivityPage() {
     const fetchOptions = async () => {
       try {
         const [topicsRes, ageGroupsRes] = await Promise.all([
-          fetch("http://localhost:5000/activities/topics"),
-          fetch("http://localhost:5000/activities/age_groups"),
+          fetchWithAuth("http://localhost:5000/activities/topics"),
+          fetchWithAuth("http://localhost:5000/activities/age_groups"),
         ])
 
         if (!topicsRes.ok || !ageGroupsRes.ok) throw new Error("Failed to fetch options")
@@ -172,14 +173,12 @@ export default function AddActivityPage() {
         materials: formData.materials,
       }
 
-      const response = await fetch("http://localhost:5000/activities", {
+      const response = await fetchWithAuth("http://localhost:5000/activities", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token") ?? ""}`,
         },
         body: JSON.stringify(payload),
-        credentials: "include",
       })
 
       const data = await response.json()

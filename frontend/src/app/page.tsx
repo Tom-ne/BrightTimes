@@ -19,13 +19,13 @@ import { Badge } from "@/components/ui/badge";
 import {
   Calendar,
   Users,
-  ExternalLink,
   Filter,
   Clock,
   Info,
   Rocket,
 } from "lucide-react";
 import Link from "next/link";
+import { fetchWithAuth } from "@/lib/api";
 
 const topics = [
   "All Topics",
@@ -63,7 +63,7 @@ export default function HomePage() {
         if (selectedTopic !== "All Topics") params.append("topic", selectedTopic);
         if (selectedAgeGroup !== "All Ages") params.append("age_group", selectedAgeGroup);
 
-        const res = await fetch(`http://localhost:5000/activities?${params.toString()}`);
+        const res = await fetchWithAuth(`http://localhost:5000/activities?${params.toString()}`);
         if (!res.ok) throw new Error("Failed to fetch activities");
 
         const data = await res.json();
@@ -76,7 +76,7 @@ export default function HomePage() {
 
     const fetchTopics = async () => {
       try {
-        const res = await fetch("http://localhost:5000/activities/topics");
+        const res = await fetchWithAuth("http://localhost:5000/activities/topics");
 
         if (!res.ok) throw new Error("Failed to fetch topics");
 
@@ -92,7 +92,7 @@ export default function HomePage() {
 
     const fetchAgeGroups = async () => {
       try {
-        const res = await fetch("http://localhost:5000/activities/age_groups");
+        const res = await fetchWithAuth("http://localhost:5000/activities/age_groups");
         
         if (!res.ok) throw new Error("Failed to fetch age groups");
 
@@ -136,7 +136,7 @@ export default function HomePage() {
 
   const handleJoinClick = (activityId: number) => async () => {
     try {
-      const res = await fetch(`http://localhost:5000/activities/${activityId}/join`, {
+      const res = await fetchWithAuth(`http://localhost:5000/activities/${activityId}/join`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
