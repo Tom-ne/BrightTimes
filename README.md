@@ -114,5 +114,3 @@ This is a personal project, but PRs are welcome! If you’re interested in contr
 ## 👤 Author
 
 Built by [Tom Neumann](https://www.linkedin.com/in/tom-neumann-18876827a/) — inspired by real-world needs during challenging times.
-
----
